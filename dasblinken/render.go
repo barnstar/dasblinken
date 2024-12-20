@@ -1,7 +1,6 @@
 package dasblinken
 
 import (
-	"math/rand/v2"
 	"time"
 )
 
@@ -23,15 +22,6 @@ type sprite struct {
 	x float32
 	v float32
 	s spriteData
-}
-
-func makeSprite(speed float32) sprite {
-	i := rand.Int() % 2
-	return sprite{
-		0,
-		speed,
-		blobs[i],
-	}
 }
 
 func clear(e Effect) {

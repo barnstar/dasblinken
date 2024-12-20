@@ -2,6 +2,9 @@
 clean:
 	rm -f piled-armv7
 
+# Copies the piled-armv7 binary over to your pi
+# Your device may not be called minipi but if it is, lucky you!  If not, change it.
+# I'm running Tailscale and Tailscale ssh on this nugget so dasnetwork alwasy dasworks.
 .PHONY: deploy
 deploy: piled-armv7
 	rsync -ave ssh ./piled-armv7 admin@minipi:/home/admin/piled/piled

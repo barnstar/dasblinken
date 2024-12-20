@@ -1,9 +1,7 @@
 package dasblinken
 
 import (
-	"fmt"
 	"math/rand/v2"
-	"time"
 )
 
 type WipeEffect struct {
@@ -13,9 +11,8 @@ type WipeEffect struct {
 }
 
 type WipeEffectOpts struct {
-	EffectsOpts
+	base        EffectsOpts
 	spriteCount int
-	frameTime   time.Duration
 }
 
 func NewWipeEffect(opts WipeEffectOpts) *WipeEffect {
@@ -29,11 +26,15 @@ func (e *WipeEffect) engine() wsEngine {
 }
 
 func (e *WipeEffect) Start() error {
-	return e.startEffect(e.opts.EffectsOpts, e)
+	return e.startEffect(e.opts.base, e)
 }
 
 func (e *WipeEffect) Stop() {
 	e.stopEffect(e.engine())
+}
+
+func (e *WipeEffect) Opts() EffectsOpts {
+	return e.opts.base
 }
 
 var (
@@ -42,6 +43,15 @@ var (
 		spriteData{{0.0, 0.4, 0.0}, {0.0, 0.6, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.6, 0.0}, {0.0, 0.4, 0.0}},
 	}
 )
+
+func makeSprite(speed float32) sprite {
+	i := rand.Int() % 2
+	return sprite{
+		0,
+		speed,
+		blobs[i],
+	}
+}
 
 func (e *WipeEffect) render(sprites []sprite) {
 	clear(e)
@@ -53,12 +63,12 @@ func (e *WipeEffect) render(sprites []sprite) {
 
 func (e *WipeEffect) animate(sprites []sprite) {
 	for i, _ := range sprites {
-		b := &sprites[i]
-		b.x = b.x + b.v
-		if b.x < 0 {
-			b.x = float32(e.opts.LedCount) + b.x
-		} else if b.x > float32(e.opts.LedCount) {
-			b.x = b.x - float32(e.opts.LedCount)
+		s := &sprites[i]
+		s.x = s.x + s.v
+		if s.x < 0 {
+			s.x = float32(e.Opts().LedCount) + s.x
+		} else if s.x > float32(e.Opts().LedCount) {
+			s.x = s.x - float32(e.Opts().LedCount)
 		}
 	}
 }
@@ -69,16 +79,15 @@ func (e *WipeEffect) run(engine wsEngine) {
 	blobs := make([]sprite, 0)
 	for range e.opts.spriteCount {
 		v := rand.Float32()*2.0 - 1.0
-		blobs = append(blobs, makeSprite(v))
+		s := makeSprite(v)
+		blobs = append(blobs, s)
 	}
 
-	fmt.Println("Running Wipe Effect")
 	for e.running.Load() == true {
-		doFrame(e.opts.frameTime, func() {
+		doFrame(e.opts.base.FrameTime, func() {
 			e.animate(blobs)
 			e.render(blobs)
 		})
 	}
-	fmt.Println("Stopping Wipe Effect")
 	e.done <- true
 }

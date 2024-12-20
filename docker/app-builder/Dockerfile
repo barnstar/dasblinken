@@ -9,7 +9,7 @@ RUN apt-get update -y && apt-get install -y \
   cmake \
   git
 
-RUN git clone https://github.com/jgarff/rpi_ws281x.git \
+RUN git clone https://github.com/barnstar/rpi_ws281x.git \
   && cd rpi_ws281x \
   && mkdir build \
   && cd build \

@@ -8,10 +8,16 @@ import (
 	ws281x "github.com/rpi-ws281x/rpi-ws281x-go"
 )
 
+type Dasblinken struct {
+	active  Effect
+	effects []Effect
+}
+
 type wsEngine interface {
 	Init() error
 	Render() error
 	Wait() error
+
 	Fini()
 	Leds(channel int) []uint32
 }
@@ -21,6 +27,7 @@ type EffectsOpts struct {
 	Channel    int
 	LedCount   int
 	Brightness int
+	FrameTime  time.Duration
 }
 
 type Effect interface {
@@ -29,6 +36,7 @@ type Effect interface {
 
 	run(wsEngine)
 	engine() wsEngine
+	Opts() EffectsOpts
 }
 
 type EffectControl struct {
@@ -86,14 +94,49 @@ func device(opts EffectsOpts) (wsEngine, error) {
 	return ws281x.MakeWS2811(&opt)
 }
 
-var activeEffect Effect
+func (dbl *Dasblinken) ActiveEffect() Effect {
+	return dbl.active
+}
 
-func RunWipeEffect(pin int, count int) Effect {
-	if activeEffect != nil {
-		activeEffect.Stop()
+func (dbl *Dasblinken) Stop() {
+	if dbl.active != nil {
+		dbl.active.Stop()
 	}
-	effectOpts := EffectsOpts{pin, 0, 64, 128}
-	activeEffect = NewWipeEffect(WipeEffectOpts{effectOpts, count, time.Duration(10000000)})
-	activeEffect.Start()
-	return activeEffect
+	dbl.active = nil
+}
+
+func (dbl *Dasblinken) RegisterEffect(effect Effect) int {
+	dbl.effects = append(dbl.effects, effect)
+	return len(dbl.effects)
+}
+
+const (
+	defaultChan       = 0
+	defaultPin        = 21
+	defaultLen        = 64
+	defaultBrightness = 128
+)
+
+func (dbl *Dasblinken) RegisterTestEffects() {
+	for i := 0; i < 10; i++ {
+		effectOpts := EffectsOpts{
+			defaultPin,
+			defaultChan,
+			defaultLen,
+			defaultBrightness,
+			time.Duration(10000000),
+		}
+		effect := NewWipeEffect(WipeEffectOpts{effectOpts, i + 4})
+		dbl.RegisterEffect(effect)
+	}
+}
+
+func (dbl *Dasblinken) SwitchToEffect(index int) {
+	if index < 0 || index > len(dbl.effects) {
+		return
+	}
+	dbl.Stop()
+	dbl.active = dbl.effects[index]
+	dbl.active.Start()
+	fmt.Printf("Switched to effect %d\n", index)
 }
