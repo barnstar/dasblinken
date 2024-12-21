@@ -22,8 +22,8 @@ type Color interface {
 
 func (c *rgb) toHex(lum float64) uint32 {
 	lum = math.Max(0, math.Min(1, lum))
-	return uint32((c.g*255.0)*lum)<<16 +
-		uint32((c.r*255.0)*lum)<<8 +
+	return uint32((c.r*255.0)*lum)<<16 +
+		uint32((c.g*255.0)*lum)<<8 +
 		uint32((c.b*255.0)*lum)
 }
 

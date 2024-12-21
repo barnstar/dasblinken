@@ -79,8 +79,8 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
             <button onclick="callEffect(3)">Race 3</button>
             <button onclick="callEffect(4)">Race 4</button>
             <button onclick="callEffect(5)">Race 5</button>
-            <button onclick="callEffect(6)">Race 6</button>
-            <button onclick="callEffect(7)">Race 7</button>
+            <button onclick="callEffect(6)">Fire 1</button>
+            <button onclick="callEffect(7)">Fire 2</button>
             <button onclick="callEffect(8)">Snow 1</button>
             <button onclick="callEffect(9)">Snow 2</button>
 		</div>

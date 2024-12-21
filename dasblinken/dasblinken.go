@@ -136,10 +136,16 @@ func stripOpts64String() EffectsOpts {
 var defaultOpts = stripOpts64String()
 
 func (dbl *Dasblinken) RegisterTestEffects() {
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 5; i++ {
 		effect := NewRaceEffect(RaceEffectOpts{defaultOpts, i + 4})
 		dbl.RegisterEffect(effect)
 	}
+
+	fire := NewFireEffect(FireEffectOpts{defaultOpts, 0.3, 0.05})
+	dbl.RegisterEffect(fire)
+
+	fire2 := NewFireEffect(FireEffectOpts{defaultOpts, 0.3, 0.1})
+	dbl.RegisterEffect(fire2)
 
 	heavySnow := NewSnowEffect(SnowEffectOpts{defaultOpts, 0.995, 0.3})
 	dbl.RegisterEffect(heavySnow)
