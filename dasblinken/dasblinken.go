@@ -13,6 +13,11 @@ type Dasblinken struct {
 	effects []Effect
 }
 
+func NewDasblinken() *Dasblinken {
+	fmt.Println("Starting dasblinken! n -> next, s -> stop, q -> quit")
+	return &Dasblinken{}
+}
+
 type wsEngine interface {
 	Init() error
 	Render() error
@@ -84,7 +89,7 @@ func (ec *EffectControl) startEffect(opts EffectsOpts, e Effect) error {
 }
 
 func device(opts EffectsOpts) (wsEngine, error) {
-	fmt.Println("Configuring Device at Pin:", opts.Pin, "Channel:", opts.Channel, "LedCount:", opts.LedCount, "Brightness:", opts.Brightness)
+	fmt.Println("Configuring Blinken Device at Pin:", opts.Pin, "Channel:", opts.Channel, "LedCount:", opts.LedCount, "Brightness:", opts.Brightness)
 
 	opt := ws281x.DefaultOptions
 	opt.Channels[opts.Channel].Brightness = opts.Brightness
@@ -103,6 +108,7 @@ func (dbl *Dasblinken) Stop() {
 		dbl.active.Stop()
 	}
 	dbl.active = nil
+	fmt.Println("Dasblinken is kaput")
 }
 
 func (dbl *Dasblinken) RegisterEffect(effect Effect) int {
@@ -117,18 +123,29 @@ const (
 	defaultBrightness = 128
 )
 
+func stripOpts64String() EffectsOpts {
+	return EffectsOpts{
+		21,
+		0,
+		64,
+		128,
+		time.Duration(10000000),
+	}
+}
+
+var defaultOpts = stripOpts64String()
+
 func (dbl *Dasblinken) RegisterTestEffects() {
-	for i := 0; i < 10; i++ {
-		effectOpts := EffectsOpts{
-			defaultPin,
-			defaultChan,
-			defaultLen,
-			defaultBrightness,
-			time.Duration(10000000),
-		}
-		effect := NewWipeEffect(WipeEffectOpts{effectOpts, i + 4})
+	for i := 0; i < 7; i++ {
+		effect := NewRaceEffect(RaceEffectOpts{defaultOpts, i + 4})
 		dbl.RegisterEffect(effect)
 	}
+
+	heavySnow := NewSnowEffect(SnowEffectOpts{defaultOpts, 0.995, 0.3})
+	dbl.RegisterEffect(heavySnow)
+
+	lightSnow := NewSnowEffect(SnowEffectOpts{defaultOpts, 0.995, 0.1})
+	dbl.RegisterEffect(lightSnow)
 }
 
 func (dbl *Dasblinken) SwitchToEffect(index int) {

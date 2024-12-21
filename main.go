@@ -12,34 +12,36 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting dasblinken! n -> next, s -> stop, q -> quit")
-
-	das := dasblinken.Dasblinken{}
+	das := dasblinken.NewDasblinken()
 	das.RegisterTestEffects()
 
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReaderSize(os.Stdin, 1)
 	defer func() {
 		das.Stop()
 	}()
+
 	input := make(chan rune)
 
 	go readKey(reader, input)
-	go handleKeyInput(input, &das)
+	go handleKeyInput(input, das)
+	runServer(das)
 
-	// Run the server in a separate goroutine
-	go func() {
-		s := &server.LedControlServer{}
-		s.EffectHandler = func(index int) {
-			das.SwitchToEffect(index)
-		}
-		s.RunServer()
-	}()
+	exitOnSignal()
+}
 
+func exitOnSignal() {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-
 	sig := <-sigChan
 	fmt.Printf("Received signal: %s. Shutting down...\n", sig)
+}
+
+func runServer(das *dasblinken.Dasblinken) {
+	s := &server.LedControlServer{
+		EffectHandler: das.SwitchToEffect,
+		StopHandler:   das.Stop,
+	}
+	go s.RunServer()
 }
 
 func handleKeyInput(input chan rune, das *dasblinken.Dasblinken) {

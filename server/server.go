@@ -8,11 +8,13 @@ import (
 
 type LedControlServer struct {
 	EffectHandler func(int)
+	StopHandler   func()
 }
 
 func (s *LedControlServer) RunServer() {
 	http.HandleFunc("/", s.handleClient)
 	http.HandleFunc("/effect", s.handleEffect)
+	http.HandleFunc("/stop", s.handleStop)
 
 	fmt.Println("Server starting on port 8080...")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
@@ -27,7 +29,7 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>DASBLIKENCONTROLLER</title>
+		<title>DASBLINKENCONTROLLER</title>
 		 <style>
             body {
                 display: flex;
@@ -42,14 +44,26 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
                 gap: 10px;
             }
             .grid-container button {
-                width: 100px;
-                height: 100px;
+                width: 70px;
+                height: 70px;
                 font-size: 24px;
+            }
+			.stop-button {
+                height: 40px;
+                font-size: 18px;
+                margin: 10px auto;
             }
         </style>
 		<script>
             function callEffect(index) {
                 fetch('/effect?index=' + index)
+                    .then(response => response.text())
+                    .then(data => console.log(data))
+                    .catch(error => console.error('Error:', error));
+            }
+
+			function stop() {
+                fetch('/stop')
                     .then(response => response.text())
                     .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
@@ -60,16 +74,17 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
 		<div>
 		<h1>DASBLIKENCONTROLLER</h1>
         <div class="grid-container">
-            <button onclick="callEffect(1)">1</button>
-            <button onclick="callEffect(2)">2</button>
-            <button onclick="callEffect(3)">3</button>
-            <button onclick="callEffect(4)">4</button>
-            <button onclick="callEffect(5)">5</button>
-            <button onclick="callEffect(6)">6</button>
-            <button onclick="callEffect(7)">7</button>
-            <button onclick="callEffect(8)">8</button>
-            <button onclick="callEffect(9)">9</button>
+            <button onclick="callEffect(1)">Race 1</button>
+            <button onclick="callEffect(2)">Race 2</button>
+            <button onclick="callEffect(3)">Race 3</button>
+            <button onclick="callEffect(4)">Race 4</button>
+            <button onclick="callEffect(5)">Race 5</button>
+            <button onclick="callEffect(6)">Race 6</button>
+            <button onclick="callEffect(7)">Race 7</button>
+            <button onclick="callEffect(8)">Snow 1</button>
+            <button onclick="callEffect(9)">Snow 2</button>
 		</div>
+        <button class="stop-button" onclick="stop()">STOP</button>
 		</div>
 	</body>
 	</html>
@@ -90,5 +105,10 @@ func (s *LedControlServer) handleEffect(w http.ResponseWriter, r *http.Request) 
 	s.EffectHandler(index - 1)
 
 	// Return a 200 OK status
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *LedControlServer) handleStop(w http.ResponseWriter, r *http.Request) {
+	s.StopHandler()
 	w.WriteHeader(http.StatusOK)
 }

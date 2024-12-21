@@ -1,7 +1,6 @@
 package dasblinken
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -17,20 +16,27 @@ type rgb struct {
 	b float64
 }
 
-func (c *rgb) toHex(dim float64) uint32 {
-	if dim > 1.0 {
-		dim = 1.0
-	}
-	return uint32((c.g*255.0)*dim)<<16 +
-		uint32((c.r*255.0)*dim)<<8 +
-		uint32((c.b*255.0)*dim)
+type Color interface {
+	toHex(dim float64) uint32
 }
 
-func (color *hsv) toRGB() (out rgb, err error) {
+func (c *rgb) toHex(lum float64) uint32 {
+	lum = math.Max(0, math.Min(1, lum))
+	return uint32((c.g*255.0)*lum)<<16 +
+		uint32((c.r*255.0)*lum)<<8 +
+		uint32((c.b*255.0)*lum)
+}
+
+func (c *hsv) toHex(dim float64) uint32 {
+	c2 := c.toRGB()
+	return c2.toHex(dim)
+}
+
+func (color *hsv) toRGB() rgb {
 	if color.h < 0 || color.h >= 360 ||
 		color.s < 0 || color.s > 1 ||
 		color.v < 0 || color.v > 1 {
-		return rgb{}, fmt.Errorf("Out of Range")
+		return rgb{}
 	}
 	// When 0 ≤ h < 360, 0 ≤ s ≤ 1 and 0 ≤ v ≤ 1:
 	C := color.v * color.s
@@ -51,5 +57,5 @@ func (color *hsv) toRGB() (out rgb, err error) {
 	case 300 <= color.h && color.h < 360:
 		Rnot, Gnot, Bnot = C, 0, X
 	}
-	return rgb{Rnot + m, Gnot + m, Bnot + m}, nil
+	return rgb{Rnot + m, Gnot + m, Bnot + m}
 }
