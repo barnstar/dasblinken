@@ -24,9 +24,11 @@ type sprite struct {
 }
 
 func clear(e Effect) {
+	e.engine().Wait()
 	for i := 0; i < len(e.engine().Leds(0)); i++ {
 		e.engine().Leds(e.Opts().Channel)[i] = uint32(0x000000)
 	}
+	e.engine().Render()
 }
 
 // Overlays the sprite s onto the strip at it's internal location

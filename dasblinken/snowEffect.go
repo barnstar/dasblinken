@@ -9,9 +9,9 @@ type SnowEffect struct {
 }
 
 type SnowEffectOpts struct {
-	base        EffectsOpts
-	meltSpeed   float64
-	flakeChance float64
+	base        EffectsOpts `json:"-"`
+	MeltSpeed   float64     `json:"meltSpeed"`
+	FlakeChance float64     `json:"flakeChance"`
 }
 
 func NewSnowEffect(opts SnowEffectOpts) *SnowEffect {
@@ -39,8 +39,12 @@ func (e *SnowEffect) Opts() EffectsOpts {
 	return e.opts.base
 }
 
+func (e *SnowEffect) SetStripConfig(s StripConfig) {
+	e.opts.base.StripConfig = s
+}
+
 func (e *SnowEffect) animate(sprites []sprite) {
-	letItSnow := rand.Float64() < e.opts.flakeChance
+	letItSnow := rand.Float64() < e.opts.FlakeChance
 	if letItSnow {
 		pos := rand.Int() % len(sprites)
 		s := &sprites[pos]
@@ -49,7 +53,7 @@ func (e *SnowEffect) animate(sprites []sprite) {
 
 	for i, _ := range sprites {
 		s := &sprites[i]
-		s.lum = s.lum * e.opts.meltSpeed
+		s.lum = s.lum * e.opts.MeltSpeed
 	}
 }
 

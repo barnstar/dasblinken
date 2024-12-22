@@ -23,9 +23,9 @@ type Color interface {
 
 func (c *rgb) RGB_Fade(lum float64) uint32 {
 	lum = math.Max(0, math.Min(1, lum))
-	return uint32((c.r*255.0)*lum)<<16 +
-		uint32((c.g*255.0)*lum)<<8 +
-		uint32((c.b*255.0)*lum)
+	return uint32((min(c.r, 1.0)*255.0)*lum)<<16 +
+		uint32((min(c.g, 1.0)*255.0)*lum)<<8 +
+		uint32((min(c.b, 1.0)*255.0)*lum)
 }
 
 func (c *rgb) Faded(lum float64) rgb {
@@ -33,9 +33,9 @@ func (c *rgb) Faded(lum float64) rgb {
 }
 
 func (c *rgb) RGB() uint32 {
-	return uint32(c.r*255.0)<<16 +
-		uint32(c.g*255.0)<<8 +
-		uint32(c.b*255.0)
+	return uint32(min(c.r, 1.0)*255.0)<<16 +
+		uint32(min(c.g, 1.0)*255.0)<<8 +
+		uint32(min(c.b, 1.0)*255.0)
 }
 
 func (color *hsv) RGB() uint32 {
@@ -71,7 +71,7 @@ func (color *hsv) RGB_Fade(lum float64) uint32 {
 	return col.RGB_Fade(lum)
 }
 
-func colourWheel(wheelPos float64) rgb {
+func rainbowPalette(wheelPos float64) rgb {
 	if wheelPos > 1.0 || wheelPos < 0 {
 		return rgb{1, 1, 1}
 	}
@@ -93,11 +93,10 @@ func colourWheel(wheelPos float64) rgb {
 		out.g = wheelPos * 3
 		out.b = 1.0 - wheelPos*3
 	}
-
 	return out
 }
 
-func heatColor(temperature float64) rgb {
+func heatPalette(temperature float64) rgb {
 	var heatcolor rgb
 
 	// now figure out which third of the spectrum we're in:
@@ -119,27 +118,24 @@ func heatColor(temperature float64) rgb {
 		heatcolor.g = 0                  // no green
 		heatcolor.b = 0                  // no blue
 	}
-
 	return heatcolor
 }
 
-
-func coldColor(temperature float64) rgb {
+func coldPalette(temperature float64) rgb {
 	var heatcolor rgb
 
 	if temperature > 0.66 {
-		heatcolor.r = (temperature - 0.66) / 0.33  
+		heatcolor.r = (temperature - 0.66) / 0.33
 		heatcolor.g = (temperature - 0.66) / 0.33
-		heatcolor.b = (temperature - 0.66) / 0.33     
+		heatcolor.b = (temperature - 0.66) / 0.33
 	} else if temperature > 0.33 && temperature <= 0.66 {
-		heatcolor.r = 1.0 - (temperature - 0.33) / 0.33 
-		heatcolor.g = 1.0 - (temperature - 0.33) / 0.33 
+		heatcolor.r = 1.0 - (temperature-0.33)/0.33
+		heatcolor.g = 1.0 - (temperature-0.33)/0.33
 		heatcolor.b = 1.0
 	} else {
-		heatcolor.r = 0 			
-		heatcolor.g = 0             
-		heatcolor.b = temperature / 0.33            
+		heatcolor.r = 0
+		heatcolor.g = 0
+		heatcolor.b = temperature / 0.33
 	}
-
 	return heatcolor
 }

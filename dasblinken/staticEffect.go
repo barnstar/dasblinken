@@ -1,6 +1,9 @@
 package dasblinken
 
-import "math/rand/v2"
+import (
+	"math"
+	"math/rand/v2"
+)
 
 type StaticEffect struct {
 	opts StaticEffectOpts
@@ -37,19 +40,27 @@ func (e *StaticEffect) Opts() EffectsOpts {
 	return e.opts.base
 }
 
+func (e *StaticEffect) SetStripConfig(s StripConfig) {
+	e.opts.base.StripConfig = s
+}
+
 func (e *StaticEffect) animate(buffer []rgb) {
-	for i, _ := range buffer {
+	for i := 0; i < e.opts.base.LedCount; i++ {
 		if rand.Float64() < 0.6 {
 			b := rand.Float64()
+			b = math.Sqrt(b)
 			buffer[i] = rgb{b, b, b}
 		}
 	}
 }
 
 func (e *StaticEffect) run(engine wsEngine) {
+	e.ws = engine
+
 	buffer := make([]rgb, e.opts.base.LedCount)
-	for i, _ := range buffer {
+	for i := 0; i < e.opts.base.LedCount; i++ {
 		b := rand.Float64()
+		b = math.Sqrt(b)
 		buffer[i] = rgb{b, b, b}
 	}
 

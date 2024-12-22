@@ -11,15 +11,22 @@ import (
 )
 
 type Dasblinken struct {
-	active  Effect
+	active  map[int]Effect
 	effects map[string]Effect
+	strips  map[int]StripConfig
 }
 
 func NewDasblinken() *Dasblinken {
 	fmt.Println("Starting dasblinken! n -> next, s -> stop, q -> quit")
 	return &Dasblinken{
 		effects: make(map[string]Effect),
+		active:  make(map[int]Effect),
+		strips:  make(map[int]StripConfig),
 	}
+}
+
+func (dbl *Dasblinken) AddStrip(channel int, pin int, ledCount int, brightness int) {
+	dbl.strips[channel] = StripConfig{pin, channel, ledCount, brightness}
 }
 
 type wsEngine interface {
@@ -31,13 +38,17 @@ type wsEngine interface {
 	Leds(channel int) []uint32
 }
 
-type EffectsOpts struct {
-	Name       string
+type StripConfig struct {
 	Pin        int
 	Channel    int
 	LedCount   int
 	Brightness int
-	FrameTime  time.Duration
+}
+
+type EffectsOpts struct {
+	Name string
+	StripConfig
+	FrameTime time.Duration
 }
 
 type Effect interface {
@@ -47,6 +58,7 @@ type Effect interface {
 	run(wsEngine)
 	engine() wsEngine
 	Opts() EffectsOpts
+	SetStripConfig(StripConfig)
 }
 
 type EffectControl struct {
@@ -104,16 +116,26 @@ func device(opts EffectsOpts) (wsEngine, error) {
 	return ws281x.MakeWS2811(&opt)
 }
 
-func (dbl *Dasblinken) ActiveEffect() Effect {
-	return dbl.active
+func (dbl *Dasblinken) ActiveEffect(channel int) Effect {
+	return dbl.active[channel]
 }
 
-func (dbl *Dasblinken) Stop() {
-	if dbl.active != nil {
-		dbl.active.Stop()
+func (dbl *Dasblinken) StopAll() {
+	for _, effect := range dbl.active {
+		effect.Stop()
 	}
-	dbl.active = nil
-	fmt.Println("Dasblinken is kaput")
+	dbl.active = make(map[int]Effect)
+	fmt.Printf("Dasblinken is kaput")
+
+}
+
+func (dbl *Dasblinken) Stop(channel int) {
+
+	if dbl.active[channel] != nil {
+		dbl.active[channel].Stop()
+	}
+	dbl.active[channel] = nil
+	fmt.Printf("Dasblinken Channel %v is kaput", channel)
 }
 
 func (dbl *Dasblinken) RegisterEffect(effect Effect) {
@@ -125,68 +147,132 @@ const (
 	defaultPin        = 21
 	defaultLen        = 144
 	defaultBrightness = 128
+	defaultfps        = 60
 )
 
-func stripOptsDefString(name string) EffectsOpts {
+var stringLen = 144
+
+func stripOptsDefString(name string, config StripConfig) EffectsOpts {
 	// 60 fps
-	frameTime := 1000000000 / 60
+	frameTime := 1000000000 / defaultfps
 	return EffectsOpts{
 		name,
-		21,
-		0,
-		defaultLen,
-		128,
+		config,
 		time.Duration(frameTime),
 	}
 }
 
-var defaultOpts = stripOptsDefString("default")
-
 func (dbl *Dasblinken) RegisterTestEffects() {
 
-	race1 := NewRaceEffect(RaceEffectOpts{stripOptsDefString(fmt.Sprintf("Single Race")), 18, true})
+	//Scaling factor
+	sf := float64(stringLen) / float64(defaultLen)
+	config, ok := dbl.strips[defaultChan]
+	if !ok {
+		panic("No default strip configuration")
+	}
+
+	race1 := NewRaceEffect(
+		RaceEffectOpts{
+			stripOptsDefString("Single Race", config),
+			18,
+			false,
+			4,
+		})
 	dbl.RegisterEffect(race1)
 
-	race2 := NewRaceEffect(RaceEffectOpts{stripOptsDefString(fmt.Sprintf("Double Race")), 18, false})
+	race2 := NewRaceEffect(
+		RaceEffectOpts{stripOptsDefString("Double Race", config),
+			18,
+			true,
+			4,
+		})
 	dbl.RegisterEffect(race2)
 
-	chase := NewRainbowChaseEffect(ChaseEffectOpts{stripOptsDefString("Rainbow Chase"), 0.25})
+	chase := NewRainbowChaseEffect(
+		ChaseEffectOpts{stripOptsDefString("Rainbow Chase", config),
+			0.25,
+		})
 	dbl.RegisterEffect(chase)
 
-	fire := NewFireEffect(FireEffectOpts{stripOptsDefString("Fire"), 0.3, 0.02, false, heatColor})
+	fire := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Fire", config),
+			0.3 * sf,
+			0.02 / sf,
+			false,
+			heatPalette,
+		})
 	dbl.RegisterEffect(fire)
 
-	fire2 := NewFireEffect(FireEffectOpts{stripOptsDefString("Fire 2"), 0.4, 0.03, false, heatColor})
+	fire2 := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Fire 2", config),
+			0.4 * sf,
+			0.03 / sf,
+			false,
+			heatPalette,
+		})
 	dbl.RegisterEffect(fire2)
 
-	fire3 := NewFireEffect(FireEffectOpts{stripOptsDefString("Double Fire"), 0.3, 0.04, true, heatColor})
+	fire3 := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Double Fire", config),
+			0.3 * sf,
+			0.04 / sf,
+			true,
+			heatPalette,
+		})
 	dbl.RegisterEffect(fire3)
 
-	fire4 := NewFireEffect(FireEffectOpts{stripOptsDefString("Double Fire 2"), 0.4, 0.05, true, heatColor})
+	fire4 := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Double Fire 2", config),
+			0.4 * sf,
+			0.05 / sf,
+			true,
+			heatPalette,
+		})
 	dbl.RegisterEffect(fire4)
 
-	fire5 := NewFireEffect(FireEffectOpts{stripOptsDefString("Cold Fire"), 0.4, 0.04, false, coldColor})
+	fire5 := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Cold Fire", config),
+			0.4 * sf,
+			0.04 / sf,
+			false,
+			coldPalette,
+		})
 	dbl.RegisterEffect(fire5)
 
-	fire6 := NewFireEffect(FireEffectOpts{stripOptsDefString("Double Cold Fire"), 0.3, 0.04, true, coldColor})
+	fire6 := NewFireEffect(
+		FireEffectOpts{stripOptsDefString("Double Cold Fire", config),
+			0.3 * sf,
+			0.04 / sf,
+			true,
+			coldPalette,
+		})
 	dbl.RegisterEffect(fire6)
 
-	heavySnow := NewSnowEffect(SnowEffectOpts{stripOptsDefString("Heavy Snow"), 0.995, 0.3})
+	heavySnow := NewSnowEffect(
+		SnowEffectOpts{stripOptsDefString("Heavy Snow", config),
+			0.995,
+			0.3 * sf,
+		})
 	dbl.RegisterEffect(heavySnow)
 
-	lightSnow := NewSnowEffect(SnowEffectOpts{stripOptsDefString("Light Snow"), 0.995, 0.1})
+	lightSnow := NewSnowEffect(
+		SnowEffectOpts{stripOptsDefString("Light Snow", config),
+			0.995,
+			0.1 * sf,
+		})
 	dbl.RegisterEffect(lightSnow)
 
-	static := NewStaticEffect(StaticEffectOpts{stripOptsDefString("Static")})
+	static := NewStaticEffect(
+		StaticEffectOpts{stripOptsDefString("Static", config)})
 	dbl.RegisterEffect(static)
 }
 
-func (dbl *Dasblinken) RandomEffect() {
+func (dbl *Dasblinken) RandomEffect(channel int) {
 	effects := dbl.Effects()
 	if len(effects) > 0 {
 		randomIndex := rand.Int() % len(effects)
 		effect := effects[randomIndex]
-		dbl.SwitchToEffect(effect.Opts().Name)
+		dbl.SwitchToEffect(effect.Opts().Name, channel)
 	}
 }
 
@@ -202,15 +288,21 @@ func (dbl *Dasblinken) Effects() []Effect {
 	return effectsSlice
 }
 
-func (dbl *Dasblinken) SwitchToEffect(name string) error {
+func (dbl *Dasblinken) SwitchToEffect(name string, channel int) error {
 	next := dbl.effects[name]
 	if nil == next {
-		fmt.Printf("Effect %s not found\n", name)
-		return fmt.Errorf("Effect not found")
+		return fmt.Errorf("Effect %s not found\n", name)
 	}
-	dbl.Stop()
-	dbl.active = next
-	dbl.active.Start()
+
+	config, ok := dbl.strips[channel]
+	if !ok {
+		return fmt.Errorf("No config for channel %d not found\n", channel)
+	}
+
+	dbl.Stop(channel)
+	dbl.active[channel] = next
+	next.SetStripConfig(config)
+	next.Start()
 	fmt.Printf("Switched to effect %v\n", name)
 	return nil
 }

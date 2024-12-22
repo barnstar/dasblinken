@@ -1,13 +1,21 @@
+# Your device may not be called minipi but if it is, lucky you!  If not, change it.
+# I'm running Tailscale and Tailscale ssh on this nugget so dasnetwork alwasy dasworks.ssh 
+HOST=minipi
+USER=admin
+DEST_DIR=/home/admin/piled
+
 .PHONY: clean
 clean:
 	rm -f piled-armv7
 
 # Copies the piled-armv7 binary over to your pi
-# Your device may not be called minipi but if it is, lucky you!  If not, change it.
-# I'm running Tailscale and Tailscale ssh on this nugget so dasnetwork alwasy dasworks.
 .PHONY: deploy
 deploy: piled-armv7
-	rsync -ave ssh ./piled-armv7 admin@minipi:/home/admin/piled/piled
+	rsync -ave ssh ./piled-armv7 $(USER)@$(HOST):$(DEST_DIR)/piled
+
+.PHONY: run
+run:
+	ssh -n -f $(USER)@$(HOST) "sh -c 'sudo killall -9 piled > /dev/null 2>&1; cd $(DEST_DIR); nohup sudo ./piled > /dev/null 2>&1 &'"
 
 # We need to link in a cGo library and building on docker is the way
 .PHONY: builder-image

@@ -13,11 +13,13 @@ import (
 
 func main() {
 	das := dasblinken.NewDasblinken()
+	//Channel 0, pin 21, 144 LEDs, 128 brightness
+	das.AddStrip(0, 21, 144, 128)
 	das.RegisterTestEffects()
 
 	reader := bufio.NewReaderSize(os.Stdin, 1)
 	defer func() {
-		das.Stop()
+		das.StopAll()
 	}()
 
 	input := make(chan rune)
@@ -58,9 +60,9 @@ func handleKeyInput(input chan rune, das *dasblinken.Dasblinken) {
 				}
 				p.Signal(syscall.SIGINT)
 			case 's':
-				das.Stop()
+				das.Stop(0)
 			case 'n':
-				das.RandomEffect()
+				das.RandomEffect(0)
 			}
 		}
 	}

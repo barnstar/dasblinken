@@ -11,9 +11,9 @@ type RainbowChaseEffect struct {
 }
 
 type ChaseEffectOpts struct {
-	base EffectsOpts
+	Base EffectsOpts `json:"-"`
 
-	speed float64
+	Speed float64 `json:"name"`
 }
 
 func NewRainbowChaseEffect(opts ChaseEffectOpts) *RainbowChaseEffect {
@@ -27,7 +27,7 @@ func (e *RainbowChaseEffect) engine() wsEngine {
 }
 
 func (e *RainbowChaseEffect) Start() error {
-	return e.startEffect(e.opts.base, e)
+	return e.startEffect(e.opts.Base, e)
 }
 
 func (e *RainbowChaseEffect) Stop() {
@@ -38,15 +38,19 @@ func (e *RainbowChaseEffect) Stop() {
 }
 
 func (e *RainbowChaseEffect) Opts() EffectsOpts {
-	return e.opts.base
+	return e.opts.Base
+}
+
+func (e *RainbowChaseEffect) SetStripConfig(s StripConfig) {
+	e.opts.Base.StripConfig = s
 }
 
 func (e *RainbowChaseEffect) run(engine wsEngine) {
 	e.ws = engine
 
-	buffer := make([]rgb, e.opts.base.LedCount)
+	buffer := make([]rgb, e.opts.Base.LedCount)
 	for e.running.Load() == true {
-		doFrame(e.opts.base.FrameTime, func() {
+		doFrame(e.opts.Base.FrameTime, func() {
 			e.animate(buffer)
 			renderBuffer(e, buffer)
 		})
@@ -55,8 +59,8 @@ func (e *RainbowChaseEffect) run(engine wsEngine) {
 }
 
 func (e *RainbowChaseEffect) animate(buffer []rgb) {
-	ledCount := e.opts.base.LedCount
-	e.q = e.q + e.opts.speed
+	ledCount := e.opts.Base.LedCount
+	e.q = e.q + e.opts.Speed
 	if e.q > 3 {
 		e.q = 0
 	} else if e.q < 0 {
@@ -75,7 +79,7 @@ func (e *RainbowChaseEffect) animate(buffer []rgb) {
 		if w >= 1 {
 			w = w - 1
 		}
-		c := colourWheel(w)
+		c := rainbowPalette(w)
 		buffer[i+int(e.q)] = c
 	}
 }

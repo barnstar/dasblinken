@@ -9,11 +9,11 @@ type FireEffect struct {
 }
 
 type FireEffectOpts struct {
-	base         EffectsOpts
-	sparking     float64
-	cooling      float64
-	double       bool
-	palletteFunc func(float64) rgb
+	base         EffectsOpts       `json:"-"`
+	Sparking     float64           `json:"sparking"`
+	Cooling      float64           `json:"cooling"`
+	DoubleEnded  bool              `json:"doubleEnded"`
+	palletteFunc func(float64) rgb `json:"-"`
 }
 
 func NewFireEffect(opts FireEffectOpts) *FireEffect {
@@ -41,6 +41,10 @@ func (e *FireEffect) Opts() EffectsOpts {
 	return e.opts.base
 }
 
+func (e *FireEffect) SetStripConfig(s StripConfig) {
+	e.opts.base.StripConfig = s
+}
+
 type fireLayout struct {
 	start int
 	end   int
@@ -51,7 +55,7 @@ func (e *FireEffect) animate(buffer []rgb, heat []float64, reverse bool, limit i
 
 	// Step 1.  Cool down every cell a little
 	for i := 0; i < ledCount; i++ {
-		ce := rand.Float64() * e.opts.cooling
+		ce := rand.Float64() * e.opts.Cooling
 		heat[i] = fsub_norm(heat[i], ce)
 	}
 
@@ -59,7 +63,7 @@ func (e *FireEffect) animate(buffer []rgb, heat []float64, reverse bool, limit i
 		heat[k] = (heat[k-1] + heat[k-2] + heat[k-2]) / 3
 	}
 
-	if rand.Float64() < e.opts.sparking {
+	if rand.Float64() < e.opts.Sparking {
 		y := rand.Int() % ledCount / 10
 		h := rand.Float64()*0.4 + 0.6
 		heat[y] = fadd_norm(heat[y], h)
@@ -87,7 +91,7 @@ func (e *FireEffect) run(engine wsEngine) {
 
 	for e.running.Load() == true {
 		doFrame(e.opts.base.FrameTime, func() {
-			if e.opts.double {
+			if e.opts.DoubleEnded {
 				e.animate(buffer, heat1, false, ledCount/2)
 				e.animate(buffer, heat2, true, ledCount/2)
 			} else {

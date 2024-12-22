@@ -11,9 +11,10 @@ type RaceEffect struct {
 }
 
 type RaceEffectOpts struct {
-	base          EffectsOpts
-	spriteCount   int
-	bidirectional bool
+	base          EffectsOpts `json:"-"`
+	SpriteCount   int         `json:"spriteCount"`
+	Bidirectional bool        `json:"bidirectional"`
+	Speed         float64     `json:"speed"`
 }
 
 func NewRaceEffect(opts RaceEffectOpts) *RaceEffect {
@@ -41,8 +42,12 @@ func (e *RaceEffect) Opts() EffectsOpts {
 	return e.opts.base
 }
 
+func (e *RaceEffect) SetStripConfig(s StripConfig) {
+	e.opts.base.StripConfig = s
+}
+
 func makeBlob(speed float32) sprite {
-	c := colourWheel(rand.Float64())
+	c := rainbowPalette(rand.Float64())
 	var data spriteData
 
 	if speed < 0 {
@@ -84,12 +89,12 @@ func (e *RaceEffect) run(engine wsEngine) {
 	e.ws = engine
 
 	blobs := make([]sprite, 0)
-	for range e.opts.spriteCount {
+	for range e.opts.SpriteCount {
 		var v float32
-		if e.opts.bidirectional {
-			v = rand.Float32()*3.0 - 1.5
+		if e.opts.Bidirectional {
+			v = rand.Float32()*float32(e.opts.Speed)*2 - float32(e.opts.Speed)
 		} else {
-			v = rand.Float32() * 2.0
+			v = rand.Float32() * float32(e.opts.Speed)
 		}
 		s := makeBlob(v)
 		blobs = append(blobs, s)

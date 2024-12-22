@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	dasblinken "barnstar.com/piled/dasblinken"
 )
 
 type LedControlServer struct {
-	EffectHandler func(string) error
-	StopHandler   func()
+	EffectHandler func(string, int) error
+	StopHandler   func(int)
 	EffectFetcher func() []dasblinken.Effect
 }
 
@@ -50,7 +51,7 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
                 width: 320px;
                 height: 40px;
                 font-size: 18px;
-				margin: auto 2px;
+				margin: 0px 2px;
             }
 			.stop-button {
                 height: 50px;
@@ -61,7 +62,7 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
         </style>
 		<script>
             function callEffect(name) {
-                fetch('/switch?name=' + name)
+                fetch('/switch?name=' + name + '&channel=0')
                     .then(response => response.text())
                     .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
@@ -120,9 +121,16 @@ func (s *LedControlServer) handleList(w http.ResponseWriter, r *http.Request) {
 func (s *LedControlServer) handleSwitch(w http.ResponseWriter, r *http.Request) {
 	// Extract the index from the query string
 	name := r.URL.Query().Get("name")
+	channelStr := r.URL.Query().Get("channel")
+	channel, err := strconv.Atoi(channelStr)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	fmt.Printf("Effect name: %d\n", name)
 
-	err := s.EffectHandler(name)
+	err = s.EffectHandler(name, channel)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -133,6 +141,6 @@ func (s *LedControlServer) handleSwitch(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *LedControlServer) handleStop(w http.ResponseWriter, r *http.Request) {
-	s.StopHandler()
+	s.StopHandler(0)
 	w.WriteHeader(http.StatusOK)
 }
