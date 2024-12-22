@@ -1,19 +1,27 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
+
+	dasblinken "barnstar.com/piled/dasblinken"
 )
 
 type LedControlServer struct {
-	EffectHandler func(int)
+	EffectHandler func(string) error
 	StopHandler   func()
+	EffectFetcher func() []dasblinken.Effect
+}
+
+type EffectInfo struct {
+	Name string `json:"name"`
 }
 
 func (s *LedControlServer) RunServer() {
 	http.HandleFunc("/", s.handleClient)
-	http.HandleFunc("/effect", s.handleEffect)
+	http.HandleFunc("/switch", s.handleSwitch)
+	http.HandleFunc("/list", s.handleList)
 	http.HandleFunc("/stop", s.handleStop)
 
 	fmt.Println("Server starting on port 8080...")
@@ -23,13 +31,13 @@ func (s *LedControlServer) RunServer() {
 }
 
 func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) {
-	html := `
+	head := `
 	<!DOCTYPE html>
 	<html lang="en">
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>DASBLINKENCONTROLLER</title>
+		<title>DASBLINKENLIGHTS</title>
 		 <style>
             body {
                 display: flex;
@@ -38,25 +46,22 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
                 height: 100vh;
                 margin: 0;
             }
-            .grid-container {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 10px;
-            }
-            .grid-container button {
-                width: 70px;
-                height: 70px;
-                font-size: 24px;
-            }
-			.stop-button {
+            .effect-button {
+                width: 320px;
                 height: 40px;
                 font-size: 18px;
+				margin: auto 2px;
+            }
+			.stop-button {
+                height: 50px;
+				width: 320px;
+                font-size: 24px;
                 margin: 10px auto;
             }
         </style>
 		<script>
-            function callEffect(index) {
-                fetch('/effect?index=' + index)
+            function callEffect(name) {
+                fetch('/switch?name=' + name)
                     .then(response => response.text())
                     .then(data => console.log(data))
                     .catch(error => console.error('Error:', error));
@@ -73,36 +78,55 @@ func (s *LedControlServer) handleClient(w http.ResponseWriter, r *http.Request) 
 	<body>
 		<div>
 		<h1>DASBLIKENCONTROLLER</h1>
-        <div class="grid-container">
-            <button onclick="callEffect(1)">Race 1</button>
-            <button onclick="callEffect(2)">Race 2</button>
-            <button onclick="callEffect(3)">Race 3</button>
-            <button onclick="callEffect(4)">Race 4</button>
-            <button onclick="callEffect(5)">Race 5</button>
-            <button onclick="callEffect(6)">Fire 1</button>
-            <button onclick="callEffect(7)">Fire 2</button>
-            <button onclick="callEffect(8)">Snow 1</button>
-            <button onclick="callEffect(9)">Snow 2</button>
+        <div>
+	`
+	w.Write([]byte(head))
+
+	effects := s.EffectFetcher()
+	for _, effect := range effects {
+		name := effect.Opts().Name
+		fmt.Fprintf(w, "<div><button class=\"effect-button\" onclick='callEffect(\"%s\")'>%s</button></div>\n", name, name)
+	}
+
+	foot := `
 		</div>
         <button class="stop-button" onclick="stop()">STOP</button>
 		</div>
 	</body>
 	</html>
 	`
-	w.Write([]byte(html))
+	w.Write([]byte(foot))
+
 }
 
-func (s *LedControlServer) handleEffect(w http.ResponseWriter, r *http.Request) {
-	// Extract the index from the query string
-	indexStr := r.URL.Query().Get("index")
-	index, err := strconv.Atoi(indexStr)
+// handleEffectList returns a list of effect names in JSON format
+func (s *LedControlServer) handleList(w http.ResponseWriter, r *http.Request) {
+	effects := s.EffectFetcher()
+	output := make([]EffectInfo, 0, len(effects))
+	for _, effect := range effects {
+		info := EffectInfo{Name: effect.Opts().Name}
+		output = append(output, info)
+	}
+
+	jsonData, err := json.Marshal(output)
 	if err != nil {
-		http.Error(w, "Invalid index", http.StatusBadRequest)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("Effect index: %d\n", index)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(jsonData)
+}
 
-	s.EffectHandler(index - 1)
+func (s *LedControlServer) handleSwitch(w http.ResponseWriter, r *http.Request) {
+	// Extract the index from the query string
+	name := r.URL.Query().Get("name")
+	fmt.Printf("Effect name: %d\n", name)
+
+	err := s.EffectHandler(name)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
 	// Return a 200 OK status
 	w.WriteHeader(http.StatusOK)

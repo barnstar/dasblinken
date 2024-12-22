@@ -37,27 +37,42 @@ func wrappingOverlay(e Effect, s *sprite) {
 		if ox < 0 || ox >= len(e.engine().Leds(e.Opts().Channel)) {
 			continue
 		}
-		e.engine().Leds(e.Opts().Channel)[ox] = s.s[i].toHex(s.lum)
+		e.engine().Leds(e.Opts().Channel)[ox] = s.s[i].RGB_Fade(s.lum)
 	}
 }
 
 type LedMatrix struct {
-	leds []uint32
-	width int
+	leds   []uint32
+	width  int
 	height int
 }
 
-//1->8
-//16->9
-//17->24
+// 1->8
+// 16->9
+// 17->24
 // etc... They are zigzagging
-func (m *LedMatrix)setPixel(x, y int, color Color, lum float64) {	
+func (m *LedMatrix) setPixel(x, y int, color Color, lum float64) {
 	var i int
 	if x%2 == 1 {
 		i = (m.height - y) + x*m.height
 	} else {
 		i = y + x*m.height
 	}
-	m.leds[i] = color.toHex(lum)
+	m.leds[i] = color.RGB_Fade(lum)
 }
 
+func renderBuffer(e Effect, buffer []rgb) {
+	ledCount := e.Opts().LedCount
+
+	e.engine().Wait()
+	for j := 0; j < ledCount && j < len(buffer); j++ {
+		e.engine().Leds(e.Opts().Channel)[j] = buffer[j].RGB()
+	}
+	e.engine().Render()
+}
+
+func clearBuffer(buffer []rgb) {
+	for i := 0; i < len(buffer); i++ {
+		buffer[i] = rgb{0, 0, 0}
+	}
+}

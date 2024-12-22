@@ -11,8 +11,9 @@ type RaceEffect struct {
 }
 
 type RaceEffectOpts struct {
-	base        EffectsOpts
-	spriteCount int
+	base          EffectsOpts
+	spriteCount   int
+	bidirectional bool
 }
 
 func NewRaceEffect(opts RaceEffectOpts) *RaceEffect {
@@ -40,22 +41,21 @@ func (e *RaceEffect) Opts() EffectsOpts {
 	return e.opts.base
 }
 
-var (
-	blobs = []spriteData{
-		spriteData{{0.5, 0.0, 0.0}, {0.7, 0.0, 0.0}, {1.0, 0.0, 0.0}, {0.7, 0.0, 0.0}, {0.5, 0.0, 0.0}},
-		spriteData{{0.0, 0.4, 0.0}, {0.0, 0.6, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.6, 0.0}, {0.0, 0.4, 0.0}},
-		spriteData{{0.4, 0.4, 0.0}, {0.6, 0.6, 0.0}, {1.0, 1.0, 0.0}, {0.6, 0.6, 0.0}, {0.4, 0.4, 0.0}},
-		spriteData{{0.0, 0.4, 0.4}, {0.0, 0.6, 0.6}, {0.0, 1.0, 1.0}, {0.0, 0.6, 6.0}, {0.0, 0.4, 4.0}},
-		spriteData{{0.6, 0.6, 0.6}, {1.0, 1.0, 1.0}, {0.6, 0.6, 6.0}},
-	}
-)
-
 func makeBlob(speed float32) sprite {
+	c := colourWheel(rand.Float64())
+	var data spriteData
+
+	if speed < 0 {
+		data = spriteData{c, c.Faded(8.), c.Faded(.6), c.Faded(.4), c.Faded(.2)}
+	} else if speed >= 0 {
+		data = spriteData{c.Faded(.2), c.Faded(.4), c.Faded(.6), c.Faded(.8), c}
+	}
+
 	return sprite{
 		0,
 		speed,
 		1.0,
-		blobs[rand.Int()%len(blobs)],
+		data,
 	}
 }
 
@@ -85,7 +85,12 @@ func (e *RaceEffect) run(engine wsEngine) {
 
 	blobs := make([]sprite, 0)
 	for range e.opts.spriteCount {
-		v := rand.Float32()*2.0 - 1.0
+		var v float32
+		if e.opts.bidirectional {
+			v = rand.Float32()*3.0 - 1.5
+		} else {
+			v = rand.Float32() * 2.0
+		}
 		s := makeBlob(v)
 		blobs = append(blobs, s)
 	}

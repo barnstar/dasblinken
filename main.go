@@ -40,6 +40,7 @@ func runServer(das *dasblinken.Dasblinken) {
 	s := &server.LedControlServer{
 		EffectHandler: das.SwitchToEffect,
 		StopHandler:   das.Stop,
+		EffectFetcher: das.Effects,
 	}
 	go s.RunServer()
 }
@@ -59,7 +60,7 @@ func handleKeyInput(input chan rune, das *dasblinken.Dasblinken) {
 			case 's':
 				das.Stop()
 			case 'n':
-				das.SwitchToEffect(0)
+				das.RandomEffect()
 			}
 		}
 	}
