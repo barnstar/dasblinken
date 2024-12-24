@@ -25,8 +25,13 @@ func NewDasblinken() *Dasblinken {
 	}
 }
 
-func (dbl *Dasblinken) AddStrip(channel int, pin int, ledCount int, brightness int) {
-	dbl.strips[channel] = StripConfig{pin, channel, ledCount, brightness}
+func (dbl *Dasblinken) AddStrip(
+	channel int,
+	pin int,
+	width int,
+	height int,
+	brightness int) {
+	dbl.strips[channel] = NewStripConfig(pin, channel, width, height, brightness)
 }
 
 type wsEngine interface {
@@ -43,6 +48,12 @@ type StripConfig struct {
 	Channel    int
 	LedCount   int
 	Brightness int
+	Width      int
+	Height     int
+}
+
+func NewStripConfig(pin, channel, width, height, brightness int) StripConfig {
+	return StripConfig{pin, channel, width * height, brightness, width, height}
 }
 
 type EffectsOpts struct {
@@ -147,10 +158,10 @@ const (
 	defaultPin        = 21
 	defaultLen        = 144
 	defaultBrightness = 128
-	defaultfps        = 60
+	defaultfps        = 40
 )
 
-var stringLen = 144
+var stringLen = 32
 
 func stripOptsDefString(name string, config StripConfig) EffectsOpts {
 	// 60 fps
@@ -170,6 +181,24 @@ func (dbl *Dasblinken) RegisterTestEffects() {
 	if !ok {
 		panic("No default strip configuration")
 	}
+
+	balls10 := NewBallsEffect(
+		BallsEffectOpts{
+			stripOptsDefString("10 Balls", config),
+			10,
+			30,
+			rainbowPalette,
+		})
+	dbl.RegisterEffect(balls10)
+
+	balls20 := NewBallsEffect(
+		BallsEffectOpts{
+			stripOptsDefString("20 Balls", config),
+			20,
+			20,
+			rainbowPalette,
+		})
+	dbl.RegisterEffect(balls20)
 
 	race1 := NewRaceEffect(
 		RaceEffectOpts{
@@ -202,6 +231,30 @@ func (dbl *Dasblinken) RegisterTestEffects() {
 			heatPalette,
 		})
 	dbl.RegisterEffect(fire)
+
+	mfire := NewFireMatrixEffect(
+		FireMatrixEffectOpts{stripOptsDefString("Fire Matrix", config),
+			0.5 * sf,
+			0.025 / sf,
+			heatPalette,
+		})
+	dbl.RegisterEffect(mfire)
+
+	gfire := NewFireMatrixEffect(
+		FireMatrixEffectOpts{stripOptsDefString("Fire Matrix (Greed)", config),
+			0.5 * sf,
+			0.025 / sf,
+			greenFire,
+		})
+	dbl.RegisterEffect(gfire)
+
+	cfire := NewFireMatrixEffect(
+		FireMatrixEffectOpts{stripOptsDefString("Fire Matrix (Blue)", config),
+			0.5 * sf,
+			0.025 / sf,
+			coldPalette,
+		})
+	dbl.RegisterEffect(cfire)
 
 	fire2 := NewFireEffect(
 		FireEffectOpts{stripOptsDefString("Fire 2", config),
@@ -262,6 +315,22 @@ func (dbl *Dasblinken) RegisterTestEffects() {
 		})
 	dbl.RegisterEffect(lightSnow)
 
+	rotation := NewSolidEffect(
+		SolidEffectOpts{stripOptsDefString("Rotating Rainbow", config),
+			240,
+			rainbowPalette,
+			randomColor,
+		})
+	dbl.RegisterEffect(rotation)
+
+	rotation2 := NewSolidEffect(
+		SolidEffectOpts{stripOptsDefString("Rotating Heat", config),
+			4,
+			rainbowPalette,
+			rotate,
+		})
+	dbl.RegisterEffect(rotation2)
+
 	static := NewStaticEffect(
 		StaticEffectOpts{stripOptsDefString("Static", config)})
 	dbl.RegisterEffect(static)
@@ -305,4 +374,8 @@ func (dbl *Dasblinken) SwitchToEffect(name string, channel int) error {
 	next.Start()
 	fmt.Printf("Switched to effect %v\n", name)
 	return nil
+}
+
+func (dbl *Dasblinken) StartStreaming() {
+
 }

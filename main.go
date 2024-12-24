@@ -14,7 +14,7 @@ import (
 func main() {
 	das := dasblinken.NewDasblinken()
 	//Channel 0, pin 21, 144 LEDs, 128 brightness
-	das.AddStrip(0, 21, 144, 128)
+	das.AddStrip(0, 21, 32, 8, 128)
 	das.RegisterTestEffects()
 
 	reader := bufio.NewReaderSize(os.Stdin, 1)

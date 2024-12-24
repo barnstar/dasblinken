@@ -44,7 +44,7 @@ func wrappingOverlay(e Effect, s *sprite) {
 }
 
 type LedMatrix struct {
-	leds   []uint32
+	leds   []rgb
 	width  int
 	height int
 }
@@ -53,14 +53,14 @@ type LedMatrix struct {
 // 16->9
 // 17->24
 // etc... They are zigzagging
-func (m *LedMatrix) setPixel(x, y int, color Color, lum float64) {
+func (m *LedMatrix) setPixel(x, y int, color rgb, lum float64) {
 	var i int
 	if x%2 == 1 {
-		i = (m.height - y) + x*m.height
+		i = (m.height - y - 1) + x*m.height
 	} else {
 		i = y + x*m.height
 	}
-	m.leds[i] = color.RGB_Fade(lum)
+	m.leds[i] = color
 }
 
 func renderBuffer(e Effect, buffer []rgb) {

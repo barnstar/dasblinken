@@ -1,0 +1,5 @@
+package dasblinken
+
+func socketListener() {
+	
+}

@@ -2,6 +2,7 @@ package dasblinken
 
 import (
 	"math"
+	"math/rand/v2"
 )
 
 type hsv struct {
@@ -96,6 +97,31 @@ func rainbowPalette(wheelPos float64) rgb {
 	return out
 }
 
+func greenFire(temperature float64) rgb {
+	var heatcolor rgb
+
+	// now figure out which third of the spectrum we're in:
+	if temperature > 0.66 {
+		// we're in the hottest third
+		heatcolor.g = 1.0 - (temperature-0.66)/0.33     // full red
+		heatcolor.b = 0.7 - (temperature-0.66)/0.33*0.7 // full green
+		heatcolor.r = (temperature - 0.66) / 0.33       // ramp up blue
+
+	} else if temperature > 0.33 && temperature <= 0.66 {
+		// we're in the middle third
+		heatcolor.g = 1.0
+		heatcolor.b = (temperature - 0.33) / 0.33 * 0.7 // ramp up green
+		heatcolor.r = 0
+
+	} else {
+		// we're in the coolest third
+		heatcolor.g = temperature / 0.33 // ramp up red
+		heatcolor.r = 0                  // no green
+		heatcolor.b = 0
+	}
+	return heatcolor
+}
+
 func heatPalette(temperature float64) rgb {
 	var heatcolor rgb
 
@@ -138,4 +164,16 @@ func coldPalette(temperature float64) rgb {
 		heatcolor.b = temperature / 0.33
 	}
 	return heatcolor
+}
+
+func randomColor(in float64) float64 {
+	return rand.Float64()
+}
+
+func rotate(in float64) float64 {
+	next := in + 0.01
+	if next >= 1.0 {
+		next = 0.01
+	}
+	return next
 }
