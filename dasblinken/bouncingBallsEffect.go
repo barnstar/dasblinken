@@ -117,8 +117,8 @@ func (e *BallsEffect) run(engine wsEngine) {
 	e.ws = engine
 
 	buffer := LedMatrix{
-		make([]rgb,
-			e.opts.base.LedCount),
+		make([]rgb, e.opts.base.LedCount),
+		make([]float64, e.opts.base.LedCount),
 		e.opts.base.Width,
 		e.opts.base.Height}
 

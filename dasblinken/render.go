@@ -1,6 +1,7 @@
 package dasblinken
 
 import (
+	"image"
 	"time"
 )
 
@@ -45,6 +46,7 @@ func wrappingOverlay(e Effect, s *sprite) {
 
 type LedMatrix struct {
 	leds   []rgb
+	lum    []float64
 	width  int
 	height int
 }
@@ -54,6 +56,9 @@ type LedMatrix struct {
 // 17->24
 // etc... They are zigzagging
 func (m *LedMatrix) setPixel(x, y int, color rgb, lum float64) {
+	if x < 0 || x >= m.width || y < 0 || y >= m.height {
+		return
+	}
 	var i int
 	if x%2 == 1 {
 		i = (m.height - y - 1) + x*m.height
@@ -61,6 +66,15 @@ func (m *LedMatrix) setPixel(x, y int, color rgb, lum float64) {
 		i = y + x*m.height
 	}
 	m.leds[i] = color
+	m.lum[i] = lum
+}
+
+func (m *LedMatrix) applyLuminosity() {
+	for i := range m.leds {
+		m.leds[i].r = m.leds[i].r * m.lum[i]
+		m.leds[i].g = m.leds[i].g * m.lum[i]
+		m.leds[i].b = m.leds[i].b * m.lum[i]
+	}
 }
 
 func renderBuffer(e Effect, buffer []rgb) {
@@ -77,4 +91,10 @@ func clearBuffer(buffer []rgb) {
 	for i := 0; i < len(buffer); i++ {
 		buffer[i] = rgb{0, 0, 0}
 	}
+}
+
+//	image := image.NewRGBA(image.Rect(0, 0, 8, 32))
+
+func renderImage(i *image.Image, e *Effect) {
+
 }

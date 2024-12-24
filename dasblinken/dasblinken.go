@@ -217,6 +217,12 @@ func (dbl *Dasblinken) RegisterTestEffects() {
 		})
 	dbl.RegisterEffect(race2)
 
+	wave := NewWaveEffect(
+		WaveEffectOpts{stripOptsDefString("Wave Chase", config),
+			rainbowPalette,
+		})
+	dbl.RegisterEffect(wave)
+
 	chase := NewRainbowChaseEffect(
 		ChaseEffectOpts{stripOptsDefString("Rainbow Chase", config),
 			0.25,

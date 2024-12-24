@@ -94,7 +94,7 @@ func (e *FireMatrixEffect) run(engine wsEngine) {
 	ledCount := e.opts.base.LedCount
 	fmt.Printf("New FireMatrixEffect with width %d, height %d\n", e.opts.base.Width, e.opts.base.Height)
 
-	buffer := LedMatrix{make([]rgb, ledCount), e.opts.base.Width, e.opts.base.Height}
+	buffer := LedMatrix{make([]rgb, ledCount), make([]float64, ledCount), e.opts.base.Width, e.opts.base.Height}
 	heat := make([]([]float64), e.opts.base.Height)
 	for i := range heat {
 		heat[i] = make([]float64, e.opts.base.Width)
