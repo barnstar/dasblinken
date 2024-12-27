@@ -75,15 +75,15 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 
 	mfire := NewFireMatrixEffect(
 		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix", config),
-			0.4 * sf,
+			0.7 * sf,
 			0.02 / sf,
 			HeatPalette,
 		})
 	dbl.RegisterEffect(mfire)
 
 	gfire := NewFireMatrixEffect(
-		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix (Greed)", config),
-			0.5 * sf,
+		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix (Green)", config),
+			0.7 * sf,
 			0.02 / sf,
 			GreenFire,
 		})
@@ -179,13 +179,6 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 		})
 	dbl.RegisterEffect(marquee)
 
-	holidays := NewTextScrollEffect(
-		TextScrollEffectOpts{StripOptsDefString("Merry", config),
-			"\x05\x05\x05\x05\x05 Merry Christmas! \x05\x05\x05\x05",
-			GreenFire,
-		})
-	dbl.RegisterEffect(holidays)
-
 	font := NewFontTestEffect(
 		FontTestEffectOpts{StripOptsDefString("Font Test", config),
 			RainbowPalette,
@@ -195,4 +188,8 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 	static := NewStaticEffect(
 		StaticEffectOpts{StripOptsDefString("Static", config)})
 	dbl.RegisterEffect(static)
+
+	clock := NewClockEffect(
+		ClockEffectOpts{StripOptsDefString("Clock", config)})
+	dbl.RegisterEffect(clock)
 }

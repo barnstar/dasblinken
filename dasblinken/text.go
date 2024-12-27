@@ -10,39 +10,25 @@ func (l *LedMatrix) DrawString(
 	dx := x
 	for _, c := range s {
 		// Don't draw characters that are off the screen
-		if dx < float64(l.Width) && dx > -CharWidth(byte(c)) && y < float64(l.Height) && y > -8 {
-			l.DrawChar(dx, y, byte(c), colorfunc, lum)
+		if dx < float64(l.Width) && dx > -float64(consoleFont.s.bitwidth) && y < float64(l.Height) && y > -8 {
+			l.DrawChar(consoleFont, dx, y, byte(c), colorfunc, lum)
 		}
-		dx += CharWidth(byte(c))
+		dx += float64(consoleFont.s.bitwidth)
 	}
-}
-
-// CharWidth returns the width of a character in pixels
-//
-// Characters are 8x8 but we apply some kerning to make them look better so
-// the number of pixels drawn can be less than 8.
-func CharWidth(c byte) float64 {
-	k := kerningChar(c)
-	return 8 - float64(k.l) - float64(k.r)
 }
 
 // StringWidth returns the width of a string in pixels
 func StringWidth(s string) float64 {
-	width := 0.0
-	for _, c := range s {
-		width += CharWidth(byte(c))
-	}
-	return width
+	return float64(consoleFont.s.bitwidth * len(s))
 }
 
 // DrawChar draws a single character at x, y with the given color function and luminance.
-func (l *LedMatrix) DrawChar(x, y float64, c byte, colorfunc func(float64, float64) RGB, lum float64) {
-	bitmap := consoleFont.bitmap(c)
-	k := kerningChar(c)
+func (l *LedMatrix) DrawChar(font bitmapFont, x, y float64, c byte, colorfunc func(float64, float64) RGB, lum float64) {
+	bitmap := font.bitmap(c)
 	for i, row := range bitmap {
-		for j := k.l; j < (8 - k.r); j++ {
-			if row&(1<<uint(j)) != 0 {
-				dx := (x + 8) - float64(j)
+		for j := 0; j < font.s.bitwidth; j++ {
+			if row&(1<<uint(7-j)) != 0 {
+				dx := x + float64(j)
 				dy := y + float64(i)
 				color := colorfunc(dx, dy)
 				l.SetPixel(int(dx), int(dy), color, lum)
@@ -51,35 +37,9 @@ func (l *LedMatrix) DrawChar(x, y float64, c byte, colorfunc func(float64, float
 	}
 }
 
-// kerningChar returns the kerning for a character
-func kerningChar(c byte) kern {
-	k, ok := kerning[string(c)]
-	if !ok {
-		k = kern{0, 0}
-	}
-	return k
-}
-
-// kerning is the kerning for each character. l and are are the number of rows to ignored
-// on the left and right side of the character respectively.
-type kern struct {
-	l int
-	r int
-}
-
-var kerning = map[string]kern{
-	`f`: {l: 1, r: 0},
-	`i`: {l: 2, r: 0},
-	`l`: {l: 1, r: 1},
-	`t`: {l: 1, r: 0},
-	`z`: {l: 1, r: 0},
-	`!`: {l: 2, r: 1},
-	`'`: {l: 0, r: 2},
-}
-
 type size struct {
-	height int
-	width  int
+	byteHeight int
+	bitwidth   int
 }
 
 // bitmapFont is a bitmap font represented as a slice of integers.
@@ -89,7 +49,126 @@ type bitmapFont struct {
 }
 
 func (f *bitmapFont) bitmap(c byte) []byte {
-	return f.data[int(c)*f.s.height : int(c)*f.s.height+f.s.width]
+	return f.data[int(c)*f.s.byteHeight : int(c)*f.s.byteHeight+f.s.byteHeight]
+}
+
+// A 7x5 font for rendering digits only.
+// The digits are indexed by value.  The colon character is index 10.
+// and requires only 1 pix of width.  There's a fancier 1 at index 11.
+// The 1 at index 1 requires only a single row of pixels which lets
+// you get a full clock face into only 32 pixels if you omit the first
+// 2 rows (which are always blank).
+var ClockFont = bitmapFont{
+	s: size{7, 5},
+	data: []byte{
+		// Char 0 - 0
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0xB0, /* |0/|0000 */
+		0xD0, /* |/0|0000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x60, /* 0--00000 */
+
+		// Char 1 - 1
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+
+		// Char 2 - 2
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0x10, /* 000|0000 */
+		0x60, /* 0--00000 */
+		0x80, /* |0000000 */
+		0x80, /* |0000000 */
+		0xf0, /* \---0000 */
+
+		// Char 3 - 3
+		0x60, /* ---00000 */
+		0x90, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x60, /* 0--00000 */
+		0x10, /* 000|0000 */
+		0x90, /* 000|0000 */
+		0x60, /* ---00000 */
+
+		// Char 4 - 4
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0xf0, /* ----0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000|0000 */
+
+		// Char 5 - 5
+		0xf0, /* /---0000 */
+		0x80, /* |0000000 */
+		0x80, /* |0000000 */
+		0xe0, /* \--00000 */
+		0x10, /* 000|0000 */
+		0x90, /* \00|0000 */
+		0x60, /* 0--00000 */
+
+		// Char 6 - 6
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0x80, /* |0000000 */
+		0xe0, /* |--00000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x60, /* 0--00000 */
+
+		// Char 7 - 7
+		0xf0, /* ----0000 */
+		0x10, /* 000|0000 */
+		0x10, /* 000/0000 */
+		0x20, /* 00/0000 */
+		0x40, /* 0|00000 */
+		0x40, /* 0|000000 */
+		0x40, /* 0|000000 */
+
+		// Char 8 - 8
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x60, /* 0--00000 */
+
+		// Char 9 - 9
+		0x60, /* 0--00000 */
+		0x90, /* |00|0000 */
+		0x90, /* |00|0000 */
+		0x70, /* 0---0000 */
+		0x10, /* 000|0000 */
+		0x90, /* 000|0000 */
+		0x60, /* 0--00000 */
+
+		// Char 10 - Colon
+		0x00, /* 00000000 */
+		0x80, /* *0000000 */
+		0x80, /* *0000000 */
+		0x00, /* 00000000 */
+		0x80, /* *0000000 */
+		0x80, /* *0000000 */
+		0x00, /* 00000000 */
+
+		// Char 11 - Fancy 1.
+		0x60, /* 0-|0000 */
+		0xA0, /* /0|0000 */
+		0x20, /* 00|0000 */
+		0x20, /* 00|0000 */
+		0x20, /* 00|0000 */
+		0x20, /* 00|0000 */
+		0x70, /* 0---000 */
+	},
 }
 
 // console_font is a 8x256 bitmap font.  Each character is 8x8 pixels.
