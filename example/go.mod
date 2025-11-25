@@ -2,9 +2,9 @@ module barnstar.com/piled
 
 go 1.23.4
 
-require barnstar.com/dasblinken v0.0.0
+require barnstar.com/dasblinken v0.0.1
 
-require barnstar.com/effects v0.0.0
+require barnstar.com/effects v0.0.1
 
 require (
 	github.com/pkg/errors v0.9.1 // indirect
