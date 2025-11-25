@@ -1,4 +1,4 @@
-package server
+package main
 
 import (
 	"encoding/json"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	dasblinken "barnstar.com/piled/dasblinken"
+	dasblinken "barnstar.com/dasblinken"
 )
 
 type LedControlServer struct {

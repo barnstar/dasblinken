@@ -3,7 +3,7 @@ package effects
 import (
 	"math/rand/v2"
 
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 type SolidEffect struct {

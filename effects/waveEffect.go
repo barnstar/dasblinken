@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 type WaveEffect struct {

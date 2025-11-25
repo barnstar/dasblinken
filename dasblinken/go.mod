@@ -1,4 +1,4 @@
-module barnstar.com/piled
+module barnstar.com/effects
 
 go 1.23.4
 

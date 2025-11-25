@@ -4,7 +4,7 @@ import (
 	"math"
 	"math/rand/v2"
 
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 type StaticEffect struct {

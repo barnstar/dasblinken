@@ -1,7 +1,7 @@
 package effects
 
 import (
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 type RainbowChaseEffect struct {

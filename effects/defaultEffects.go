@@ -1,7 +1,7 @@
 package effects
 
 import (
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 // Most effets were scaled around a 144 1m led strip

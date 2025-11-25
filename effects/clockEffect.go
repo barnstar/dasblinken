@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	. "barnstar.com/piled/dasblinken"
+	. "barnstar.com/dasblinken"
 )
 
 // This is optimized for an 8x32 matrix

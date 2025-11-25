@@ -25,6 +25,8 @@ We assume no responsibility for dasMagicSmoke...
 
 ```
 % make builder-image
+% make example
+# or
 % make clean deploy run
 ```
 

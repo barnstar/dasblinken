@@ -7,9 +7,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	dasblinken "barnstar.com/piled/dasblinken"
-	effects "barnstar.com/piled/dasblinken/effects"
-	server "barnstar.com/piled/server"
+	dasblinken "barnstar.com/dasblinken"
+	effects "barnstar.com/effects"
 )
 
 func main() {
@@ -44,7 +43,7 @@ func main() {
 		das.StopAll()
 	}()
 
-	s := &server.LedControlServer{
+	s := &LedControlServer{
 		EffectHandler: das.SwitchToEffect,
 		StopHandler:   das.Stop,
 		EffectFetcher: das.Effects,
