@@ -3,16 +3,21 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	dasblinken "barnstar.com/dasblinken"
+	"tailscale.com/tsnet"
 )
 
 type LedControlServer struct {
 	EffectHandler func(string, dasblinken.Channel) error
 	StopHandler   func(dasblinken.Channel)
 	EffectFetcher func() []dasblinken.Effect
+
+	Hostname string
+	AuthKey  string
 }
 
 type EffectInfo struct {
@@ -20,14 +25,28 @@ type EffectInfo struct {
 }
 
 func (s *LedControlServer) RunServer() {
-	http.HandleFunc("/", s.handleClient)
-	http.HandleFunc("/switch", s.handleSwitch)
-	http.HandleFunc("/list", s.handleList)
-	http.HandleFunc("/stop", s.handleStop)
+	srv := &tsnet.Server{
+		Hostname: s.Hostname,
+		AuthKey:  s.AuthKey,
+		Dir:      "/var/lib/tsnet-" + s.Hostname,
+	}
 
-	fmt.Println("Server starting on port 8080...")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		fmt.Printf("Error starting server: %s\n", err)
+	defer srv.Close()
+
+	ln, err := srv.Listen("tcp", ":80")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ln.Close()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", s.handleClient)
+	mux.HandleFunc("/switch", s.handleSwitch)
+	mux.HandleFunc("/list", s.handleList)
+	mux.HandleFunc("/stop", s.handleStop)
+	fmt.Printf("Server starting on tailnet as %s...\n", s.Hostname)
+	if err := http.Serve(ln, mux); err != nil {
+		log.Fatal(err)
 	}
 }
 

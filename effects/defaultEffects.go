@@ -8,14 +8,9 @@ import (
 // So some of the properties are scaled as a proportion of the
 var sf = 0.2
 
-func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
+type RegisterFn func(effect Effect)
 
-	config, ok := dbl.Config(channel)
-
-	//Scaling factor
-	if !ok {
-		panic("No default strip configuration")
-	}
+func RegisterDefaultEffects(f RegisterFn, config StripConfig) {
 
 	balls10 := NewBallsEffect(
 		BallsEffectOpts{
@@ -24,7 +19,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			30,
 			RainbowPalette,
 		})
-	dbl.RegisterEffect(balls10)
+	f(balls10)
 
 	balls20 := NewBallsEffect(
 		BallsEffectOpts{
@@ -33,7 +28,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			20,
 			RainbowPalette,
 		})
-	dbl.RegisterEffect(balls20)
+	f(balls20)
 
 	race1 := NewRaceEffect(
 		RaceEffectOpts{
@@ -42,7 +37,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			false,
 			4,
 		})
-	dbl.RegisterEffect(race1)
+	f(race1)
 
 	race2 := NewRaceEffect(
 		RaceEffectOpts{StripOptsDefString("Double Race", config),
@@ -50,19 +45,19 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			true,
 			4,
 		})
-	dbl.RegisterEffect(race2)
+	f(race2)
 
 	wave := NewWaveEffect(
 		WaveEffectOpts{StripOptsDefString("Wave Chase", config),
 			RainbowPalette,
 		})
-	dbl.RegisterEffect(wave)
+	f(wave)
 
 	chase := NewRainbowChaseEffect(
 		ChaseEffectOpts{StripOptsDefString("Rainbow Chase", config),
 			0.25,
 		})
-	dbl.RegisterEffect(chase)
+	f(chase)
 
 	fire := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Fire", config),
@@ -71,7 +66,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			false,
 			HeatPalette,
 		})
-	dbl.RegisterEffect(fire)
+	f(fire)
 
 	mfire := NewFireMatrixEffect(
 		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix", config),
@@ -79,7 +74,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			0.02 / sf,
 			HeatPalette,
 		})
-	dbl.RegisterEffect(mfire)
+	f(mfire)
 
 	gfire := NewFireMatrixEffect(
 		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix (Green)", config),
@@ -87,7 +82,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			0.02 / sf,
 			GreenFire,
 		})
-	dbl.RegisterEffect(gfire)
+	f(gfire)
 
 	cfire := NewFireMatrixEffect(
 		FireMatrixEffectOpts{StripOptsDefString("Fire Matrix (Blue)", config),
@@ -95,7 +90,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			0.02 / sf,
 			ColdPalette,
 		})
-	dbl.RegisterEffect(cfire)
+	f(cfire)
 
 	fire2 := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Fire 2", config),
@@ -104,7 +99,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			false,
 			HeatPalette,
 		})
-	dbl.RegisterEffect(fire2)
+	f(fire2)
 
 	fire3 := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Double Fire", config),
@@ -113,7 +108,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			true,
 			HeatPalette,
 		})
-	dbl.RegisterEffect(fire3)
+	f(fire3)
 
 	fire4 := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Double Fire 2", config),
@@ -122,7 +117,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			true,
 			HeatPalette,
 		})
-	dbl.RegisterEffect(fire4)
+	f(fire4)
 
 	fire5 := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Cold Fire", config),
@@ -131,7 +126,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			false,
 			ColdPalette,
 		})
-	dbl.RegisterEffect(fire5)
+	f(fire5)
 
 	fire6 := NewFireEffect(
 		FireEffectOpts{StripOptsDefString("Double Cold Fire", config),
@@ -140,21 +135,21 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			true,
 			ColdPalette,
 		})
-	dbl.RegisterEffect(fire6)
+	f(fire6)
 
 	heavySnow := NewSnowEffect(
 		SnowEffectOpts{StripOptsDefString("Heavy Snow", config),
 			0.995,
 			0.3 * sf,
 		})
-	dbl.RegisterEffect(heavySnow)
+	f(heavySnow)
 
 	lightSnow := NewSnowEffect(
 		SnowEffectOpts{StripOptsDefString("Light Snow", config),
 			0.995,
 			0.1 * sf,
 		})
-	dbl.RegisterEffect(lightSnow)
+	f(lightSnow)
 
 	rotation := NewSolidEffect(
 		SolidEffectOpts{StripOptsDefString("Rotating Rainbow", config),
@@ -162,7 +157,7 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			RainbowPalette,
 			RandomColor,
 		})
-	dbl.RegisterEffect(rotation)
+	f(rotation)
 
 	rotation2 := NewSolidEffect(
 		SolidEffectOpts{StripOptsDefString("Rotating Heat", config),
@@ -170,26 +165,26 @@ func RegisterDefaultEffects(dbl *Dasblinken, channel Channel) {
 			RainbowPalette,
 			Rotate,
 		})
-	dbl.RegisterEffect(rotation2)
+	f(rotation2)
 
 	marquee := NewTextScrollEffect(
 		TextScrollEffectOpts{StripOptsDefString("Marquee", config),
 			"Hello World!",
 			RainbowPalette,
 		})
-	dbl.RegisterEffect(marquee)
+	f(marquee)
 
 	font := NewFontTestEffect(
 		FontTestEffectOpts{StripOptsDefString("Font Test", config),
 			RainbowPalette,
 		})
-	dbl.RegisterEffect(font)
+	f(font)
 
 	static := NewStaticEffect(
 		StaticEffectOpts{StripOptsDefString("Static", config)})
-	dbl.RegisterEffect(static)
+	f(static)
 
 	clock := NewClockEffect(
 		ClockEffectOpts{StripOptsDefString("Clock", config)})
-	dbl.RegisterEffect(clock)
+	f(clock)
 }

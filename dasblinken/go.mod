@@ -1,6 +1,6 @@
 module barnstar.com/dasblinken
 
-go 1.23.4
+go 1.25.3
 
 require github.com/rpi-ws281x/rpi-ws281x-go v1.0.10
 

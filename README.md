@@ -20,14 +20,25 @@ Rasbian Bookwork (Debian) will get it done.
 We use GPIO29 (last top pin) by default.  Often, no level shifter is needed.
 YMMV, but if you see instability, a 3.3 -> 5V level shifter might be required
 
+You probably want to modify the constants in the makefile.  The auth key is pulled
+out of the local env.  Everything else is hardcoded to values that probably aren't 
+what you want.
+
+Modify config.json to match your LED strip.  The effects package includes a number
+of effects that will work on strips and matrices.
+
+The piled app runs as a tsnet client on your tailnet too. 
+
+
 
 We assume no responsibility for dasMagicSmoke...
 
-```
+```bash
+% export AUTHKEY=<an auth key for your tailnet>
 % make builder-image
-% make example
-# or
-% make clean deploy run
+% make all
+# make deploy
+% make run
 ```
 
-You can then http://minipi:8080
+You can then http://dasblinken

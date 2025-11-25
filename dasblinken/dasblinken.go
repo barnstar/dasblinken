@@ -87,7 +87,6 @@ func (dbl *Dasblinken) RegisterEffect(effect Effect) {
 }
 
 func StripOptsDefString(name string, config StripConfig) EffectsOpts {
-	// 60 fps
 	frameTime := 1000000000 / config.Fps
 	return EffectsOpts{
 		name,

@@ -11,7 +11,11 @@ import (
 	effects "barnstar.com/effects"
 )
 
+var ()
+
 func main() {
+	tsname := flag.String("tsname", "dasblinken", "Tailscale hostname")
+	authkey := flag.String("authkey", "", "Tailscale auth key")
 	channel := flag.Int("c", 0, "Channel number")
 	pin := flag.Int("p", 21, "Pin number")
 	width := flag.Int("w", 32, "Width (length) of LED matrix")
@@ -20,12 +24,11 @@ func main() {
 	brightness := flag.Int("brightness", 128, "Brightness level")
 	configFile := flag.String("config", "", "Config File")
 
-	// Parse command-line flags
 	flag.Parse()
 
 	// Create a new Dasblinken instance
 	das := dasblinken.NewDasblinken()
-	// Add strip with command-line parameters
+
 	if *configFile != "" {
 		sc, err := dasblinken.LoadStripConfig(*configFile)
 		if err != nil {
@@ -37,7 +40,14 @@ func main() {
 		sc := dasblinken.NewStripConfig(*pin, *channel, *width, *height, *brightness, *fps)
 		das.AddStrip(sc)
 	}
-	effects.RegisterDefaultEffects(das, dasblinken.Channel(*channel))
+	ch := dasblinken.Channel(*channel)
+	config, ok := das.Config(ch)
+	if !ok {
+		fmt.Printf("No default strip configuration")
+		os.Exit(1)
+	}
+
+	effects.RegisterDefaultEffects(das.RegisterEffect, config)
 
 	defer func() {
 		das.StopAll()
@@ -47,6 +57,8 @@ func main() {
 		EffectHandler: das.SwitchToEffect,
 		StopHandler:   das.Stop,
 		EffectFetcher: das.Effects,
+		Hostname:      *tsname,
+		AuthKey:       *authkey,
 	}
 	go s.RunServer()
 
