@@ -13,12 +13,25 @@ type SnowEffect struct {
 }
 
 type SnowEffectOpts struct {
-	base        EffectsOpts `json:"-"`
-	MeltSpeed   float64     `json:"meltSpeed"`
-	FlakeChance float64     `json:"flakeChance"`
+	base        EffectsOpts
+	MeltSpeed   float64
+	FlakeChance float64
 }
 
-func NewSnowEffect(opts SnowEffectOpts) *SnowEffect {
+type SnowConfig struct {
+	Name       string  `json:"name"`
+	Topology   string  `json:"topology"`
+	Dampening  float64 `json:"dampening"`
+	Snowflakes float64 `json:"snowflakes"`
+}
+
+func NewSnowEffect(config SnowConfig, stripConfig StripConfig) *SnowEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := SnowEffectOpts{
+		base:        baseOpts,
+		MeltSpeed:   config.Dampening,
+		FlakeChance: config.Snowflakes,
+	}
 	effect := SnowEffect{}
 	effect.opts = opts
 	return &effect

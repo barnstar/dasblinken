@@ -12,15 +12,31 @@ type FireEffect struct {
 	EffectState
 }
 
+type FireConfig struct {
+	Name        string  `json:"name"`
+	Topology    string  `json:"topology"`
+	Sparking    float64 `json:"sparking"`
+	Cooling     float64 `json:"cooling"`
+	DoubleEnded bool    `json:"doubleEnded"`
+	Palette     string  `json:"palette"`
+}
 type FireEffectOpts struct {
-	base         EffectsOpts       `json:"-"`
-	Sparking     float64           `json:"sparking"`
-	Cooling      float64           `json:"cooling"`
-	DoubleEnded  bool              `json:"doubleEnded"`
-	palletteFunc func(float64) RGB `json:"-"`
+	base         EffectsOpts
+	Sparking     float64
+	Cooling      float64
+	DoubleEnded  bool
+	palletteFunc func(float64) RGB
 }
 
-func NewFireEffect(opts FireEffectOpts) *FireEffect {
+func NewFireEffect(config FireConfig, stripConfig StripConfig) *FireEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := FireEffectOpts{
+		base:         baseOpts,
+		Sparking:     config.Sparking,
+		Cooling:      config.Cooling,
+		DoubleEnded:  config.DoubleEnded,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := FireEffect{}
 	effect.opts = opts
 	return &effect

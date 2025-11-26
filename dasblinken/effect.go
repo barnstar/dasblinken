@@ -11,6 +11,7 @@ type EffectsOpts struct {
 	Name string
 	StripConfig
 	FrameTime time.Duration
+	Requires  Topology
 }
 
 // An Effect is an interface for a light effect.
@@ -24,7 +25,7 @@ type Effect interface {
 	SetStripConfig(StripConfig)
 }
 
-// Effects have an associated state.  The effect will run until 
+// Effects have an associated state.  The effect will run until
 // it detets Runningis false, at which point it should send true
 // to the Done channel.  The engine will clean up.
 type EffectState struct {

@@ -14,13 +14,28 @@ type FireMatrixEffect struct {
 }
 
 type FireMatrixEffectOpts struct {
-	base         EffectsOpts       `json:"-"`
-	Sparking     float64           `json:"sparking"`
-	Cooling      float64           `json:"cooling"`
-	palletteFunc func(float64) RGB `json:"-"`
+	base         EffectsOpts
+	Sparking     float64
+	Cooling      float64
+	palletteFunc func(float64) RGB
 }
 
-func NewFireMatrixEffect(opts FireMatrixEffectOpts) *FireMatrixEffect {
+type FireMatrixConfig struct {
+	Name     string  `json:"name"`
+	Topology string  `json:"topology"`
+	Sparking float64 `json:"sparking"`
+	Cooling  float64 `json:"cooling"`
+	Palette  string  `json:"palette"`
+}
+
+func NewFireMatrixEffect(config FireMatrixConfig, stripConfig StripConfig) *FireMatrixEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := FireMatrixEffectOpts{
+		base:         baseOpts,
+		Sparking:     config.Sparking,
+		Cooling:      config.Cooling,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := FireMatrixEffect{}
 	effect.opts = opts
 	return &effect

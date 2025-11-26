@@ -166,6 +166,8 @@ func ColdPalette(temperature float64) RGB {
 	return heatcolor
 }
 
+type ColorTransform func(float64) float64
+
 func RandomColor(in float64) float64 {
 	return rand.Float64()
 }

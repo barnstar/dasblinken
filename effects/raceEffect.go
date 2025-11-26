@@ -12,14 +12,29 @@ type RaceEffect struct {
 	EffectState
 }
 
-type RaceEffectOpts struct {
-	base          EffectsOpts `json:"-"`
-	SpriteCount   int         `json:"spriteCount"`
-	Bidirectional bool        `json:"bidirectional"`
-	Speed         float64     `json:"speed"`
+type RaceConfig struct {
+	Name      string  `json:"name"`
+	Topology  string  `json:"topology"`
+	Length    int     `json:"length"`
+	Mirrored  bool    `json:"mirrored"`
+	NumRacers float64 `json:"numRacers"`
 }
 
-func NewRaceEffect(opts RaceEffectOpts) *RaceEffect {
+type RaceEffectOpts struct {
+	base          EffectsOpts
+	SpriteCount   int
+	Bidirectional bool
+	Speed         float64
+}
+
+func NewRaceEffect(config RaceConfig, stripConfig StripConfig) *RaceEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := RaceEffectOpts{
+		base:          baseOpts,
+		SpriteCount:   int(config.NumRacers),
+		Bidirectional: config.Mirrored,
+		Speed:         float64(config.Length),
+	}
 	effect := RaceEffect{}
 	effect.opts = opts
 	return &effect
@@ -59,10 +74,10 @@ func makeBlob(speed float32) LinearSprite {
 	}
 
 	return LinearSprite{
-		0,
-		speed,
-		1.0,
-		data,
+		X:    0,
+		V:    speed,
+		Lum:  1.0,
+		Data: data,
 	}
 }
 

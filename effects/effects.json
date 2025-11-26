@@ -1,0 +1,207 @@
+{
+  "balls": [
+    {
+      "name": "Balls x10",
+      "topology": "matrix",
+      "numBalls": 10,
+      "trailLen": 5,
+      "palette": "rainbow"
+    },
+    {
+      "name": "Balls x20",
+      "topology": "matrix",
+      "numBalls": 20,
+      "trailLen": 3,
+      "palette": "rainbow"
+    }
+  ],
+  "race": [
+    {
+      "name": "Race",
+      "topology": "linear",
+      "length": 18,
+      "mirrored": false,
+      "numRacers": 4
+    },
+    {
+      "name": "Race (Mirrored)",
+      "topology": "linear",
+      "length": 18,
+      "mirrored": true,
+      "numRacers": 4
+    }
+  ],
+  "wave": [
+    {
+      "name": "Wave RGB",
+      "topology": "matrix",
+      "palette": "rainbow"
+    }
+  ],
+  "chase": [
+    {
+      "name": "Chase (RGB)",
+      "topology": "linear",
+      "speed": 0.25,
+      "palette": "rainbow"
+    },
+    {
+      "name": "Chase (Green)",
+      "topology": "linear",
+      "speed": 0.25,
+      "palette": "green"
+    }
+  ],
+  "fire": [
+    {
+      "name": "Fire",
+      "topology": "linear",
+      "sparking": 0.8,
+      "cooling": 0.02,
+      "doubleEnded": false,
+      "palette": "heat"
+    },
+    {
+      "name": "Fire Alt",
+      "topology": "linear",
+      "sparking": 0.6,
+      "cooling": 0.02,
+      "doubleEnded": false,
+      "palette": "heat"
+    },
+    {
+      "name": "Fire (Mirrored)",
+      "topology": "linear",
+      "sparking": 0.6,
+      "cooling": 0.01,
+      "doubleEnded": true,
+      "palette": "heat"
+    },
+    {
+      "name": "Fire Alt (Mirrored)",
+      "topology": "linear",
+      "sparking": 0.4,
+      "cooling": 0.05,
+      "doubleEnded": true,
+      "palette": "heat"
+    },
+    {
+      "name": "Cold Fire",
+      "topology": "linear",
+      "sparking": 0.4,
+      "cooling": 0.04,
+      "doubleEnded": false,
+      "palette": "cold"
+    },
+    {
+      "name": "Cold Fire (Mirrored)",
+      "topology": "linear",
+      "sparking": 0.3,
+      "cooling": 0.04,
+      "doubleEnded": true,
+      "palette": "cold"
+    }
+  ],
+  "fireMatrix": [
+    {
+      "name": "Fire Matrix",
+      "topology": "matrix",
+      "sparking": 0.7,
+      "cooling": 0.02,
+      "palette": "heat"
+    },
+    {
+      "name": "Fire Matrix (Green)",
+      "topology": "matrix",
+      "sparking": 0.7,
+      "cooling": 0.02,
+      "palette": "green"
+    },
+    {
+      "name": "Fire Matrix (Blue)",
+      "topology": "matrix",
+      "sparking": 0.7,
+      "cooling": 0.02,
+      "palette": "cold"
+    }
+  ],
+  "snow": [
+    {
+      "name": "Snow (Heavy)",
+      "topology": "any",
+      "dampening": 0.995,
+      "snowflakes": 0.3
+    },
+    {
+      "name": "Snow (Light)",
+      "topology": "any",
+      "dampening": 0.995,
+      "snowflakes": 0.1
+    }
+  ],
+  "solid": [
+    {
+      "name": "Palette Rotation (RGB)",
+      "topology": "any",
+      "frameDelay": 240,
+      "palette": "rainbow",
+      "mode": "random"
+    },
+    {
+      "name": "Palette Rotation (Heat)",
+      "topology": "any",
+      "frameDelay": 4,
+      "palette": "heat",
+      "mode": "rotate"
+    }
+  ],
+  "textScroll": [
+    {
+      "name": "Marquee",
+      "topology": "matrix",
+      "text": "Hello World!",
+      "palette": "rainbow"
+    }
+  ],
+  "fontTest": [
+    {
+      "name": "Font Test",
+      "topology": "matrix",
+      "palette": "rainbow"
+    }
+  ],
+  "static": [
+    {
+      "name": "Static",
+      "topology": "any"
+    }
+  ],
+  "clock": [
+    {
+      "name": "Clock",
+      "topology": "matrix"
+    }
+  ],
+  "flicker": [
+    {
+      "name": "Flicker",
+      "topology": "any",
+      "numGroups": 20,
+      "minRadius": 3,
+      "maxRadius": 8,
+      "flickerSpeed": 0.2,
+      "flickerAmt": 0.5,
+      "palette": ""
+    },
+    {
+      "name": "Flicker (Wide)",
+      "topology": "any",
+      "numGroups": 10,
+      "minRadius": 8,
+      "maxRadius": 20,
+      "flickerSpeed": 0.5,
+      "flickerAmt": 0.9,
+      "palette": ""
+    }
+  ]
+}

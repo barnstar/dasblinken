@@ -38,13 +38,12 @@ s - signal
 
 ![Pi Zero 2W Header](pi.jpg)
 
-
 Multiple channels might work?  It hasn't been tested.  300 led strips seem OK with a decent
 power supply.
 
 
 Modify config.json to match your LED strip.  The effects package includes a number
-of effects that will work on strips and matrices.  
+of effects that will work on strips and matrices.  ~/.ssh
 
 We assume no responsibility for dasMagicSmoke...
 

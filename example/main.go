@@ -23,6 +23,7 @@ func main() {
 	fps := flag.Int("f", 60, "FPS")
 	brightness := flag.Int("brightness", 128, "Brightness level")
 	configFile := flag.String("config", "", "Config File")
+	effectsDef := flag.String("effects", "effects.json", "Effects definition file")
 
 	flag.Parse()
 
@@ -47,7 +48,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	effects.RegisterDefaultEffects(das.RegisterEffect, config)
+	effects.LoadEffectsFromFile(*effectsDef, das.RegisterEffect, config)
 
 	defer func() {
 		das.StopAll()

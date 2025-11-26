@@ -13,11 +13,20 @@ type StaticEffect struct {
 	EffectState
 }
 
+type StaticConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+}
+
 type StaticEffectOpts struct {
 	base EffectsOpts
 }
 
-func NewStaticEffect(opts StaticEffectOpts) *StaticEffect {
+func NewStaticEffect(config StaticConfig, stripConfig StripConfig) *StaticEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := StaticEffectOpts{
+		base: baseOpts,
+	}
 	effect := StaticEffect{}
 	effect.opts = opts
 	return &effect

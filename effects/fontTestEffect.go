@@ -14,13 +14,24 @@ type FontTestEffect struct {
 	s      string
 }
 
+type FontTestConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+	Palette  string `json:"palette"`
+}
+
 type FontTestEffectOpts struct {
 	base EffectsOpts
 
-	palletteFunc func(float64) RGB `json:"-"`
+	palletteFunc func(float64) RGB
 }
 
-func NewFontTestEffect(opts FontTestEffectOpts) *FontTestEffect {
+func NewFontTestEffect(config FontTestConfig, stripConfig StripConfig) *FontTestEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := FontTestEffectOpts{
+		base:         baseOpts,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := FontTestEffect{}
 	effect.opts = opts
 	return &effect

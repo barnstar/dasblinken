@@ -11,6 +11,14 @@ import (
 
 type Channel int
 
+type Topology int
+
+const (
+	Any Topology = iota
+	Linear
+	Matrix
+)
+
 // WSEngine is the interface wrapper for the rpi-ws281x-go library.
 type WSEngine interface {
 	Init() error
@@ -83,15 +91,28 @@ func (dbl *Dasblinken) Stop(channel Channel) {
 }
 
 func (dbl *Dasblinken) RegisterEffect(effect Effect) {
+	stripType := Any
+	requires := effect.Opts().Requires
+
+	if effect.Opts().Height > 1 {
+		stripType = Matrix
+	} else {
+		stripType = Linear
+	}
+	if requires != Any && requires != stripType {
+		return
+	}
+
 	dbl.effects[effect.Opts().Name] = effect
 }
 
-func StripOptsDefString(name string, config StripConfig) EffectsOpts {
+func StripOptsDefString(name string, config StripConfig, requires Topology) EffectsOpts {
 	frameTime := 1000000000 / config.Fps
 	return EffectsOpts{
 		name,
 		config,
 		time.Duration(frameTime),
+		requires,
 	}
 }
 

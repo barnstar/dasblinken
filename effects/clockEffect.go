@@ -17,11 +17,20 @@ type ClockEffect struct {
 	x      float64
 }
 
+type ClockConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+}
+
 type ClockEffectOpts struct {
 	base EffectsOpts
 }
 
-func NewClockEffect(opts ClockEffectOpts) *ClockEffect {
+func NewClockEffect(config ClockConfig, stripConfig StripConfig) *ClockEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := ClockEffectOpts{
+		base: baseOpts,
+	}
 	effect := ClockEffect{}
 	effect.opts = opts
 	return &effect

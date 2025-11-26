@@ -15,13 +15,23 @@ type WaveEffect struct {
 	offset float64
 }
 
+type WaveConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+	Palette  string `json:"palette"`
+}
 type WaveEffectOpts struct {
 	base EffectsOpts
 
-	palletteFunc func(float64) RGB `json:"-"`
+	palletteFunc func(float64) RGB
 }
 
-func NewWaveEffect(opts WaveEffectOpts) *WaveEffect {
+func NewWaveEffect(config WaveConfig, stripConfig StripConfig) *WaveEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := WaveEffectOpts{
+		base:         baseOpts,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := WaveEffect{}
 	effect.opts = opts
 	return &effect

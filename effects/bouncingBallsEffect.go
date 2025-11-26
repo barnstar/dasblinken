@@ -7,6 +7,14 @@ import (
 	. "barnstar.com/dasblinken"
 )
 
+type BallsConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+	NumBalls int    `json:"numBalls"`
+	TrailLen int    `json:"trailLen"`
+	Palette  string `json:"palette"`
+}
+
 type BallsEffect struct {
 	opts BallsEffectOpts
 	ws   WSEngine
@@ -14,14 +22,21 @@ type BallsEffect struct {
 }
 
 type BallsEffectOpts struct {
-	base EffectsOpts `json:"-"`
+	base EffectsOpts
 
 	ballCount    int
 	trailLen     int
-	palletteFunc func(float64) RGB `json:"-"`
+	palletteFunc func(float64) RGB
 }
 
-func NewBallsEffect(opts BallsEffectOpts) *BallsEffect {
+func NewBallsEffect(config BallsConfig, stripConfig StripConfig) *BallsEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := BallsEffectOpts{
+		base:         baseOpts,
+		ballCount:    config.NumBalls,
+		trailLen:     config.TrailLen,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := BallsEffect{}
 	effect.opts = opts
 	return &effect

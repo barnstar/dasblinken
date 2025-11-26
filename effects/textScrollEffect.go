@@ -13,14 +13,27 @@ type TextScrollEffect struct {
 	x      float64
 }
 
+type TextScrollConfig struct {
+	Name     string `json:"name"`
+	Topology string `json:"topology"`
+	Text     string `json:"text"`
+	Palette  string `json:"palette"`
+}
+
 type TextScrollEffectOpts struct {
 	base EffectsOpts
 
 	text         string
-	palletteFunc func(float64) RGB `json:"-"`
+	palletteFunc func(float64) RGB
 }
 
-func NewTextScrollEffect(opts TextScrollEffectOpts) *TextScrollEffect {
+func NewTextScrollEffect(config TextScrollConfig, stripConfig StripConfig) *TextScrollEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := TextScrollEffectOpts{
+		base:         baseOpts,
+		text:         config.Text,
+		palletteFunc: getPalette(config.Palette),
+	}
 	effect := TextScrollEffect{}
 	effect.opts = opts
 	return &effect

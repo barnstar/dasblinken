@@ -15,16 +15,30 @@ type SolidEffect struct {
 	destColour float64
 	colorStep  float64
 }
+type SolidConfig struct {
+	Name       string  `json:"name"`
+	Topology   string  `json:"topology"`
+	FrameDelay float64 `json:"frameDelay"`
+	Palette    string  `json:"palette"`
+	Mode       string  `json:"mode"`
+}
 
 type SolidEffectOpts struct {
-	base EffectsOpts `json:"-"`
+	base EffectsOpts
 
 	rotationFrames float64
-	palletteFunc   func(float64) RGB `json:"-"`
+	palletteFunc   func(float64) RGB
 	rotationFunc   func(float64) float64
 }
 
-func NewSolidEffect(opts SolidEffectOpts) *SolidEffect {
+func NewSolidEffect(config SolidConfig, stripConfig StripConfig) *SolidEffect {
+	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
+	opts := SolidEffectOpts{
+		base:           baseOpts,
+		rotationFrames: config.FrameDelay,
+		palletteFunc:   getPalette(config.Palette),
+		rotationFunc:   getColorTransform(config.Mode),
+	}
 	effect := SolidEffect{}
 	effect.opts = opts
 	return &effect

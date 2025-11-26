@@ -3,7 +3,7 @@
 HOST=minipi
 USER=admin
 DEST_DIR=/home/admin/piled
-CONFIG=default.json
+CONFIG=config.json
 TSNAME=dasblinken
 AUTHKEY ?= $(shell echo $$AUTHKEY)
 
@@ -16,7 +16,8 @@ clean:
 .PHONY: deploy
 deploy: example
 	rsync -ave ssh ./piled $(USER)@$(HOST):$(DEST_DIR)/piled
-	rsync -ave ssh ./default.json $(USER)@$(HOST):$(DEST_DIR)/$(CONFIG) 
+	rsync -ave ssh ./$(CONFIG) $(USER)@$(HOST):$(DEST_DIR)/$(CONFIG) 
+	rsync -ave ssh ./effects/effects.json $(USER)@$(HOST):$(DEST_DIR)/effects.json 
 
 .PHONY: run
 run:
