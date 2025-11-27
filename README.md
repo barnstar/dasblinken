@@ -43,7 +43,7 @@ power supply.
 
 
 Modify config.json to match your LED strip.  The effects package includes a number
-of effects that will work on strips and matrices.  ~/.ssh
+of effects that will work on strips and matrices.
 
 We assume no responsibility for dasMagicSmoke...
 
