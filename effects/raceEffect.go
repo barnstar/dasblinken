@@ -123,5 +123,6 @@ func (e *RaceEffect) Run(engine WSEngine) {
 			e.render(blobs)
 		})
 	}
+	Clear(e)
 	e.Done <- true
 }

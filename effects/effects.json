@@ -56,7 +56,7 @@
     {
       "name": "Fire",
       "topology": "linear",
-      "sparking": 0.8,
+      "sparking": 0.6,
       "cooling": 0.02,
       "doubleEnded": false,
       "palette": "heat"
@@ -64,8 +64,8 @@
     {
       "name": "Fire Alt",
       "topology": "linear",
-      "sparking": 0.6,
-      "cooling": 0.02,
+      "sparking": 0.8,
+      "cooling": 0.03,
       "doubleEnded": false,
       "palette": "heat"
     },
@@ -73,31 +73,31 @@
       "name": "Fire (Mirrored)",
       "topology": "linear",
       "sparking": 0.6,
-      "cooling": 0.01,
+      "cooling": 0.03,
       "doubleEnded": true,
       "palette": "heat"
     },
     {
       "name": "Fire Alt (Mirrored)",
       "topology": "linear",
-      "sparking": 0.4,
-      "cooling": 0.05,
+      "sparking": 0.8,
+      "cooling": 0.03,
       "doubleEnded": true,
       "palette": "heat"
     },
     {
       "name": "Cold Fire",
       "topology": "linear",
-      "sparking": 0.4,
-      "cooling": 0.04,
+      "sparking": 0.7,
+      "cooling": 0.05,
       "doubleEnded": false,
       "palette": "cold"
     },
     {
       "name": "Cold Fire (Mirrored)",
       "topology": "linear",
-      "sparking": 0.3,
-      "cooling": 0.04,
+      "sparking": 0.6,
+      "cooling": 0.03,
       "doubleEnded": true,
       "palette": "cold"
     }
@@ -130,13 +130,13 @@
       "name": "Snow (Heavy)",
       "topology": "any",
       "dampening": 0.995,
-      "snowflakes": 0.3
+      "snowflakes": 0.05
     },
     {
       "name": "Snow (Light)",
       "topology": "any",
       "dampening": 0.995,
-      "snowflakes": 0.1
+      "snowflakes": 0.02
     }
   ],
   "solid": [

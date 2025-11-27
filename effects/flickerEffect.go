@@ -176,9 +176,9 @@ func (e *FlickerEffect) Run(engine WSEngine) {
 					buffer[i].B = math.Min(1.0, buffer[i].B+b)
 				}
 			}
-
 			RenderBuffer(e, buffer)
 		})
 	}
+	Clear(e)
 	e.Done <- true
 }

@@ -73,6 +73,7 @@ func (e *ChaseEffect) Run(engine WSEngine) {
 			RenderBuffer(e, buffer)
 		})
 	}
+	Clear(e)
 	e.Done <- true
 }
 

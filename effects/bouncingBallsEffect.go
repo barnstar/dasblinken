@@ -150,5 +150,6 @@ func (e *BallsEffect) Run(engine WSEngine) {
 			RenderBuffer(e, buffer.Leds)
 		})
 	}
+	Clear(e)
 	e.Done <- true
 }

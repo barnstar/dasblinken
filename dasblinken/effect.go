@@ -44,6 +44,9 @@ func (ec *EffectState) StopEffect(engine WSEngine) {
 		return
 	}
 
+	engine.Render()
+	engine.Wait()
+
 	ec.Running.Store(false)
 	select {
 	case <-ec.Done:

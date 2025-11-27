@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 	"sort"
+	"sync"
 	"time"
 
 	ws281x "github.com/rpi-ws281x/rpi-ws281x-go"
@@ -32,6 +33,7 @@ type WSEngine interface {
 // Dasblinken is the main struct for the dasblinken package.
 // It holds all the active effects and the configuration for the strips.
 type Dasblinken struct {
+	mu      sync.Mutex
 	active  map[Channel]Effect
 	effects map[string]Effect
 	strips  map[Channel]StripConfig
@@ -50,10 +52,14 @@ func NewDasblinken() *Dasblinken {
 // AddStrip adds a new strip configuration to the Dasblinken instance.
 // Each channel can have a separate led configuration.
 func (dbl *Dasblinken) AddStrip(c StripConfig) {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	dbl.strips[c.Channel] = c
 }
 
 func (dbl *Dasblinken) Config(channel Channel) (StripConfig, bool) {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	config, ok := dbl.strips[channel]
 	return config, ok
 }
@@ -71,10 +77,14 @@ func Device(opts EffectsOpts) (WSEngine, error) {
 }
 
 func (dbl *Dasblinken) ActiveEffect(channel Channel) Effect {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	return dbl.active[channel]
 }
 
 func (dbl *Dasblinken) StopAll() {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	for _, effect := range dbl.active {
 		effect.Stop()
 	}
@@ -83,6 +93,8 @@ func (dbl *Dasblinken) StopAll() {
 }
 
 func (dbl *Dasblinken) Stop(channel Channel) {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	if dbl.active[channel] != nil {
 		dbl.active[channel].Stop()
 	}
@@ -103,6 +115,8 @@ func (dbl *Dasblinken) RegisterEffect(effect Effect) {
 		return
 	}
 
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	dbl.effects[effect.Opts().Name] = effect
 }
 
@@ -126,6 +140,8 @@ func (dbl *Dasblinken) RandomEffect(channel Channel) {
 }
 
 func (dbl *Dasblinken) Effects() []Effect {
+	dbl.mu.Lock()
+	defer dbl.mu.Unlock()
 	effectsSlice := make([]Effect, 0, len(dbl.effects))
 	for _, effect := range dbl.effects {
 		effectsSlice = append(effectsSlice, effect)
@@ -138,6 +154,7 @@ func (dbl *Dasblinken) Effects() []Effect {
 }
 
 func (dbl *Dasblinken) SwitchToEffect(name string, channel Channel) error {
+	dbl.mu.Lock()
 	next := dbl.effects[name]
 	if nil == next {
 		return fmt.Errorf("Effect %s not found\n", name)
@@ -147,6 +164,7 @@ func (dbl *Dasblinken) SwitchToEffect(name string, channel Channel) error {
 	if !ok {
 		return fmt.Errorf("No config for channel %d not found\n", channel)
 	}
+	dbl.mu.Unlock()
 
 	dbl.Stop(channel)
 	dbl.active[channel] = next

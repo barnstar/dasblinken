@@ -105,5 +105,6 @@ func (e *SnowEffect) Run(engine WSEngine) {
 			e.render(flakes)
 		})
 	}
+	Clear(e)
 	e.Done <- true
 }

@@ -115,5 +115,6 @@ func (e *ClockEffect) Run(engine WSEngine) {
 		})
 		fc += 1
 	}
+	Clear(e)
 	e.Done <- true
 }
