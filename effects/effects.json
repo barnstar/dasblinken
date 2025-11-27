@@ -186,7 +186,7 @@
     {
       "name": "Flicker",
       "topology": "any",
-      "numGroups": 20,
+      "numGroups": 25,
       "minRadius": 3,
       "maxRadius": 8,
       "flickerSpeed": 0.2,
@@ -196,7 +196,7 @@
     {
       "name": "Flicker (Wide)",
       "topology": "any",
-      "numGroups": 10,
+      "numGroups": 25,
       "minRadius": 8,
       "maxRadius": 20,
       "flickerSpeed": 0.5,

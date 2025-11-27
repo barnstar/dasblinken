@@ -35,12 +35,16 @@ type FlickerConfig struct {
 }
 
 type flickerGroup struct {
-	center     int
-	radius     int
-	intensity  float64
-	flickerAmt float64
-	speed      float64
-	phase      float64
+	center      int
+	radius      int
+	intensity   float64
+	flickerAmt  float64
+	speed       float64
+	phase       float64
+	lifetime    float64 // Total lifetime of this group (5-10 seconds)
+	age         float64 // Current age in seconds
+	fadeInTime  float64 // Time to fade in (1 second)
+	fadeOutTime float64 // Time to fade out (1 second)
 }
 
 func NewFlickerEffect(config FlickerConfig, stripConfig StripConfig) *FlickerEffect {
@@ -105,6 +109,21 @@ func (e *FlickerEffect) SetStripConfig(s StripConfig) {
 	e.opts.base.StripConfig = s
 }
 
+func (e *FlickerEffect) initializeGroup(ledCount int) flickerGroup {
+	return flickerGroup{
+		center:      rand.IntN(ledCount),
+		radius:      rand.IntN(e.opts.MaxRadius-e.opts.MinRadius) + e.opts.MinRadius,
+		intensity:   rand.Float64(),
+		flickerAmt:  rand.Float64()*0.4 + 0.3,
+		speed:       rand.Float64()*e.opts.FlickerSpeed + 0.5,
+		phase:       rand.Float64() * math.Pi * 2,
+		lifetime:    rand.Float64()*10.0 + 5.0, // 5-15 seconds
+		age:         0,
+		fadeInTime:  2.0, // 2 second fade in
+		fadeOutTime: 2.0, // 2 second fade out
+	}
+}
+
 func (e *FlickerEffect) Run(engine WSEngine) {
 	e.ws = engine
 
@@ -114,14 +133,9 @@ func (e *FlickerEffect) Run(engine WSEngine) {
 	// Initialize flicker groups
 	groups := make([]flickerGroup, e.opts.NumGroups)
 	for i := range groups {
-		groups[i] = flickerGroup{
-			center:     rand.IntN(ledCount),
-			radius:     rand.IntN(e.opts.MaxRadius-e.opts.MinRadius) + e.opts.MinRadius,
-			intensity:  rand.Float64(),
-			flickerAmt: rand.Float64()*0.4 + 0.3,
-			speed:      rand.Float64()*e.opts.FlickerSpeed + 0.5,
-			phase:      rand.Float64() * math.Pi * 2,
-		}
+		groups[i] = e.initializeGroup(ledCount)
+		// Stagger initial ages so they don't all restart at once
+		groups[i].age = rand.Float64() * groups[i].lifetime
 	}
 
 	frameCount := 0.0
@@ -130,10 +144,34 @@ func (e *FlickerEffect) Run(engine WSEngine) {
 		RenderFrame(e.opts.base.FrameTime, func() {
 			// Clear buffers
 			ClearBuffer(buffer)
-			frameCount += e.opts.base.FrameTime.Seconds()
+
+			deltaTime := e.opts.base.FrameTime.Seconds()
+			frameCount += deltaTime
 
 			// Calculate contribution from each group
-			for _, group := range groups {
+			for g := range groups {
+				group := &groups[g]
+
+				// Update group age
+				group.age += deltaTime
+
+				// Check if group lifetime expired, re-initialize if so
+				if group.age >= group.lifetime {
+					groups[g] = e.initializeGroup(ledCount)
+					group = &groups[g]
+				}
+
+				// Calculate envelope (fade in/out)
+				envelope := 1.0
+				if group.age < group.fadeInTime {
+					// Fade in
+					envelope = group.age / group.fadeInTime
+				} else if group.age > group.lifetime-group.fadeOutTime {
+					// Fade out
+					timeUntilEnd := group.lifetime - group.age
+					envelope = timeUntilEnd / group.fadeOutTime
+				}
+
 				// Update flicker using sine wave plus noise
 				flicker := math.Sin(frameCount*group.speed+group.phase) * group.flickerAmt
 				flicker += (rand.Float64() - 0.5) * 0.2
@@ -154,7 +192,8 @@ func (e *FlickerEffect) Run(engine WSEngine) {
 						fade = (math.Cos((1-fade)*math.Pi) + 1) / 2
 					}
 
-					intensity := fade * brightness * group.intensity
+					// Apply envelope to intensity
+					intensity := fade * brightness * group.intensity * envelope
 
 					// Get normalized color values
 					var r, g, b float64

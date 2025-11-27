@@ -5,7 +5,7 @@ USER=admin
 DEST_DIR=/home/admin/piled
 CONFIG=config.json
 TSNAME=dasblinken
-AUTHKEY ?= $(shell echo $$AUTHKEY)
+AUTHKEY ?= $(shell echo $$DBL_AUTHKEY)
 
 
 .PHONY: clean
