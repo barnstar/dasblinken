@@ -16,13 +16,7 @@ var ()
 func main() {
 	tsname := flag.String("tsname", "dasblinken", "Tailscale hostname")
 	authkey := flag.String("authkey", "", "Tailscale auth key")
-	channel := flag.Int("c", 0, "Channel number")
-	pin := flag.Int("p", 21, "Pin number")
-	width := flag.Int("w", 32, "Width (length) of LED matrix")
-	height := flag.Int("h", 8, "Height of LED matrix")
-	fps := flag.Int("f", 60, "FPS")
-	brightness := flag.Int("brightness", 128, "Brightness level")
-	configFile := flag.String("config", "", "Config File")
+	configFile := flag.String("config", "", "Config file path")
 	effectsDef := flag.String("effects", "effects.json", "Effects definition file")
 
 	flag.Parse()
@@ -31,35 +25,31 @@ func main() {
 	das := dasblinken.NewDasblinken()
 
 	if *configFile != "" {
-		sc, err := dasblinken.LoadStripConfig(*configFile)
+		// Load the single strip configuration
+		config, err := dasblinken.LoadStripConfig(*configFile)
 		if err != nil {
-			fmt.Printf("Error loading config file: %s\n", err)
+			fmt.Printf("Unable to load config from %s: %s\n", *configFile, err)
 			return
 		}
-		das.AddStrip(sc)
+		fmt.Printf("Loaded strip config: %+v\n", config)
+		das.SetStrip(config)
+		// Load effects for the strip
+		effects.LoadEffectsFromFile(*effectsDef, das.RegisterEffect, config)
 	} else {
-		sc := dasblinken.NewStripConfig(*pin, *channel, *width, *height, *brightness, *fps)
-		das.AddStrip(sc)
+		fmt.Printf("No config file specified\n")
+		return
 	}
-	ch := dasblinken.Channel(*channel)
-	config, ok := das.Config(ch)
-	if !ok {
-		fmt.Printf("No default strip configuration")
-		os.Exit(1)
-	}
-
-	effects.LoadEffectsFromFile(*effectsDef, das.RegisterEffect, config)
 
 	defer func() {
 		das.StopAll()
 	}()
 
 	s := &LedControlServer{
-		EffectHandler: das.SwitchToEffect,
-		StopHandler:   das.Stop,
-		EffectFetcher: das.Effects,
-		Hostname:      *tsname,
-		AuthKey:       *authkey,
+		Das:         das,
+		Hostname:    *tsname,
+		AuthKey:     *authkey,
+		ConfigFile:  *configFile,
+		EffectsFile: *effectsDef,
 	}
 	go s.RunServer()
 

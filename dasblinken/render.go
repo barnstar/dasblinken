@@ -26,10 +26,9 @@ type LinearSprite struct {
 
 func Clear(e Effect) {
 	e.Engine().Wait()
-	ch := int(e.Opts().Channel)
 
 	for i := 0; i < len(e.Engine().Leds(0)); i++ {
-		e.Engine().Leds(ch)[i] = uint32(0x000000)
+		e.Engine().Leds(0)[i] = uint32(0x000000)
 	}
 	e.Engine().Render()
 }
@@ -37,13 +36,12 @@ func Clear(e Effect) {
 // Overlays the sprite s onto the strip at it's internal location
 // This will wrap around in either direction
 func WrappingOverlay(e Effect, s *LinearSprite) {
-	ch := int(e.Opts().Channel)
 	for i := 0; i < len(s.Data); i++ {
 		ox := int(s.X) + i
-		if ox < 0 || ox >= len(e.Engine().Leds(ch)) {
+		if ox < 0 || ox >= len(e.Engine().Leds(0)) {
 			continue
 		}
-		e.Engine().Leds(ch)[ox] = s.Data[i].RGB_Fade(s.Lum)
+		e.Engine().Leds(0)[ox] = s.Data[i].RGB_Fade(s.Lum)
 	}
 }
 
@@ -91,11 +89,10 @@ func (m *LedMatrix) ApplyLuminosity() {
 
 func RenderBuffer(e Effect, buffer []RGB) {
 	count := e.Opts().Len()
-	ch := int(e.Opts().Channel)
 
 	e.Engine().Wait()
 	for j := 0; j < count && j < len(buffer); j++ {
-		e.Engine().Leds(ch)[j] = buffer[j].RGB()
+		e.Engine().Leds(0)[j] = buffer[j].RGB()
 	}
 	e.Engine().Render()
 }
