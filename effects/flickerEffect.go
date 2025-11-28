@@ -195,24 +195,20 @@ func (e *FlickerEffect) Run(engine WSEngine) {
 					// Apply envelope to intensity
 					intensity := fade * brightness * group.intensity * envelope
 
-					// Get normalized color values
-					var r, g, b float64
+					var color RGB
 					if e.opts.PalletteFunc != nil {
-						color := e.opts.PalletteFunc(intensity)
-						r = float64(color.R) / 255.0
-						g = float64(color.G) / 255.0
-						b = float64(color.B) / 255.0
+						color = e.opts.PalletteFunc(intensity)
 					} else {
 						// Default flame colors: orange/red/yellow (normalized)
-						r = intensity
-						g = intensity * 0.6
-						b = intensity * 0.12
+						color.R = intensity
+						color.G = intensity * 0.6
+						color.B = intensity * 0.12
 					}
 
 					// Additive blending with normalized floats
-					buffer[i].R = math.Min(1.0, buffer[i].R+r)
-					buffer[i].G = math.Min(1.0, buffer[i].G+g)
-					buffer[i].B = math.Min(1.0, buffer[i].B+b)
+					buffer[i].R = math.Min(1.0, buffer[i].R+color.R)
+					buffer[i].G = math.Min(1.0, buffer[i].G+color.G)
+					buffer[i].B = math.Min(1.0, buffer[i].B+color.B)
 				}
 			}
 			RenderBuffer(e, buffer)

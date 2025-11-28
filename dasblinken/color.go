@@ -97,6 +97,8 @@ func RainbowPalette(wheelPos float64) RGB {
 	return out
 }
 
+type PalletteFunc func(float64) RGB
+
 func GreenFire(temperature float64) RGB {
 	var heatcolor RGB
 
@@ -164,6 +166,78 @@ func ColdPalette(temperature float64) RGB {
 		heatcolor.B = temperature / 0.33
 	}
 	return heatcolor
+}
+
+// Ice palette: white -> light blue -> dark blue
+func IcePalette(temperature float64) RGB {
+	var color RGB
+
+	if temperature > 0.5 {
+		// Light blue -> dark blue
+		progress := (temperature - 0.5) / 0.5
+		color.R = 0.7 - (progress * 0.7) // fade from 0.7 to 0
+		color.G = 0.9 - (progress * 0.3) // fade from 0.9 to 0.6
+		color.B = 1.0                    // stay full blue
+	} else {
+		// White -> light blue
+		progress := temperature / 0.5
+		color.R = 1.0 - (progress * 0.3) // fade from 1.0 to 0.7
+		color.G = 1.0 - (progress * 0.1) // fade from 1.0 to 0.9
+		color.B = 1.0                    // stay full blue
+	}
+	return color
+}
+
+// Festive palette: white -> green -> red
+func FestivePalette(temperature float64) RGB {
+	var color RGB
+
+	if temperature > 0.5 {
+		// Green -> red
+		progress := (temperature - 0.5) / 0.5
+		color.R = progress       // ramp up from 0 to 1
+		color.G = 1.0 - progress // ramp down from 1 to 0
+		color.B = 0
+	} else {
+		// White -> green
+		progress := temperature / 0.5
+		color.R = 1.0 - progress // fade from 1.0 to 0
+		color.G = 1.0            // stay full green
+		color.B = 1.0 - progress // fade from 1.0 to 0
+	}
+	return color
+}
+
+// FullFire palette: red -> orange -> yellow -> white -> light blue
+func FullFirePalette(temperature float64) RGB {
+	var color RGB
+
+	if temperature > 0.75 {
+		// White -> light blue
+		progress := (temperature - 0.75) / 0.25
+		color.R = 1.0 - (progress * 0.3) // fade from 1.0 to 0.7
+		color.G = 1.0 - (progress * 0.1) // fade from 1.0 to 0.9
+		color.B = 1.0                    // stay full blue
+	} else if temperature > 0.5 {
+		// Yellow -> white
+		progress := (temperature - 0.5) / 0.25
+		color.R = 1.0      // stay full red
+		color.G = 1.0      // stay full green
+		color.B = progress // ramp up from 0 to 1
+	} else if temperature > 0.25 {
+		// Orange -> yellow
+		progress := (temperature - 0.25) / 0.25
+		color.R = 1.0                    // stay full red
+		color.G = 0.5 + (progress * 0.5) // ramp from 0.5 to 1.0
+		color.B = 0
+	} else {
+		// Red -> orange
+		progress := temperature / 0.25
+		color.R = 1.0            // stay full red
+		color.G = progress * 0.5 // ramp from 0 to 0.5
+		color.B = 0
+	}
+	return color
 }
 
 type ColorTransform func(float64) float64

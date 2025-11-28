@@ -1,9 +1,6 @@
 package effects
 
 import (
-	"fmt"
-	"os"
-
 	. "barnstar.com/dasblinken"
 )
 
@@ -32,16 +29,9 @@ type TextScrollEffectOpts struct {
 
 func NewTextScrollEffect(config TextScrollConfig, stripConfig StripConfig) *TextScrollEffect {
 	baseOpts := StripOptsDefString(config.Name, stripConfig, getTopology(config.Topology))
-
-	marqueeText := config.Text
-	fileText, err := os.ReadFile(fmt.Sprintf("%s.txt", config.Text))
-	if err != nil {
-		marqueeText = string(fileText)
-	}
-
 	opts := TextScrollEffectOpts{
 		base:         baseOpts,
-		text:         marqueeText,
+		text:         config.Text,
 		palletteFunc: getPalette(config.Palette),
 	}
 	effect := TextScrollEffect{}

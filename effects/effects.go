@@ -39,6 +39,12 @@ func getPalette(name string) func(float64) RGB {
 		return ColdPalette
 	case "green":
 		return GreenFire
+	case "ice":
+		return IcePalette
+	case "festive":
+		return FestivePalette
+	case "fullfire":
+		return FullFirePalette
 	default:
 		return nil
 	}

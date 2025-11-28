@@ -16,6 +16,9 @@ clean:
 .PHONY: deploy
 deploy: example
 	rsync -ave ssh ./piled $(USER)@$(HOST):$(DEST_DIR)/piled
+
+.PHONY: deployconfigs
+deployconfigs: 
 	rsync -ave ssh ./$(CONFIG) $(USER)@$(HOST):$(DEST_DIR)/$(CONFIG) 
 	rsync -ave ssh ./effects/effects.json $(USER)@$(HOST):$(DEST_DIR)/effects.json 
 
@@ -32,4 +35,4 @@ piled:
 	docker run --rm -v "$(PWD)":/usr/src/piled --platform linux/arm/v7 \
  		-w /usr/src/piled/example ws2811-builder:latest go build -o "../piled" -v -ldflags "-linkmode external -extldflags -static"
 
-all: clean piled
+all: clean piled deploy run
