@@ -27,8 +27,8 @@ type LinearSprite struct {
 func Clear(e Effect) {
 	e.Engine().Wait()
 
-	for i := 0; i < len(e.Engine().Leds(0)); i++ {
-		e.Engine().Leds(0)[i] = uint32(0x000000)
+	for i := 0; i < len(e.Engine().Leds(e.Opts().Channel)); i++ {
+		e.Engine().Leds(e.Opts().Channel)[i] = uint32(0x000000)
 	}
 	e.Engine().Render()
 }
@@ -38,10 +38,10 @@ func Clear(e Effect) {
 func WrappingOverlay(e Effect, s *LinearSprite) {
 	for i := 0; i < len(s.Data); i++ {
 		ox := int(s.X) + i
-		if ox < 0 || ox >= len(e.Engine().Leds(0)) {
+		if ox < 0 || ox >= len(e.Engine().Leds(e.Opts().Channel)) {
 			continue
 		}
-		e.Engine().Leds(0)[ox] = s.Data[i].RGB_Fade(s.Lum)
+		e.Engine().Leds(e.Opts().Channel)[ox] = s.Data[i].RGB_Fade(s.Lum)
 	}
 }
 
@@ -92,7 +92,7 @@ func RenderBuffer(e Effect, buffer []RGB) {
 
 	e.Engine().Wait()
 	for j := 0; j < count && j < len(buffer); j++ {
-		e.Engine().Leds(0)[j] = buffer[j].RGB()
+		e.Engine().Leds(e.Opts().Channel)[j] = buffer[j].RGB()
 	}
 	e.Engine().Render()
 }

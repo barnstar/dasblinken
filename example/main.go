@@ -14,29 +14,37 @@ import (
 var ()
 
 func main() {
-	tsname := flag.String("tsname", "dasblinken", "Tailscale hostname")
 	authkey := flag.String("authkey", "", "Tailscale auth key")
-	configFile := flag.String("config", "", "Config file path")
+	configFile := flag.String("config", "config.json", "Config file path")
 	effectsDef := flag.String("effects", "effects.json", "Effects definition file")
 
 	flag.Parse()
 
-	// Create a new Dasblinken instance
 	das := dasblinken.NewDasblinken()
 
-	if *configFile != "" {
-		// Load the single strip configuration
-		config, err := dasblinken.LoadStripConfig(*configFile)
-		if err != nil {
-			fmt.Printf("Unable to load config from %s: %s\n", *configFile, err)
-			return
+	config, err := dasblinken.LoadStripConfig(*configFile)
+	if err != nil {
+		fmt.Printf("Unable to load config from %s: %s\n", *configFile, err)
+		return
+	}
+	fmt.Printf("Loaded strip config: %+v\n", config)
+	das.SetStrip(config)
+	effects.LoadEffectsFromFile(*effectsDef, das.RegisterEffect, config)
+
+	if *authkey == "" {
+		keybytes, err := os.ReadFile("authkey.txt")
+		if err == nil {
+			*authkey = string(keybytes)
 		}
-		fmt.Printf("Loaded strip config: %+v\n", config)
-		das.SetStrip(config)
-		// Load effects for the strip
-		effects.LoadEffectsFromFile(*effectsDef, das.RegisterEffect, config)
-	} else {
-		fmt.Printf("No config file specified\n")
+	}
+
+	if *authkey == "" {
+		fmt.Println("No Tailscale auth key found or provided, exiting (use --authkey or authkey.json).")
+		return
+	}
+
+	if config.Hostname == "" {
+		fmt.Println("No hostname specified in config, exiting.")
 		return
 	}
 
@@ -44,16 +52,17 @@ func main() {
 		das.StopAll()
 	}()
 
+	fmt.Printf("Starting server with configuration %+v\n", config)
+
 	s := &LedControlServer{
 		Das:         das,
-		Hostname:    *tsname,
+		Hostname:    config.Hostname,
 		AuthKey:     *authkey,
 		ConfigFile:  *configFile,
 		EffectsFile: *effectsDef,
 	}
 	go s.RunServer()
 
-	// Wait for a signal to exit
 	exitOnSignal()
 }
 

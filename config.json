@@ -1,1 +1,10 @@
-{"pin":21,"brightness":128,"width":300,"height":1,"fps":30,"invert":false}
+{
+    "hostname":"dasblinken",
+    "pin":21,
+    "brightness":128,
+    "width":660,
+    "height":1,
+    "fps":30,
+    "invert":false,
+    "channel":0
+}
